@@ -54,7 +54,13 @@ if args.use_gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
 img_size = '3,' + str(args.image_h) + ',' + str(args.image_w)
 data_dir= args.data_dir
-train_txt = data_dir + 'train_list.txt'
+train_txt = data_dir + '/train_list.txt'
+if not os.path.exists(data_dir):
+    print('[CHECK] ' + 'The dataset path is not exists!')
+    exit(1)
+if not os.path.exists(train_txt):
+    print('[CHECK] ' + 'The train list file path is not exists!')
+    exit(1)
 label_list = []
 img_len = 0
 with open(train_txt) as flist:
@@ -66,8 +72,14 @@ with open(train_txt) as flist:
         if label not in label_list:
             label_list.append(label)
 label_dims = len(label_list)
-assert args.image_h % 32 == 0, 'This number of h must be divisible by 32'
-assert args.image_w % 32 == 0, 'This number of w must be divisible by 32'
+
+if args.model == 'AlexNet' and args.use_pretrained:
+    if not (args.image_h == 224 and args.image_w == 224):
+        print('[CHECK] ' + 'The AlexNet\'s h and w must be 224!')
+        exit(0)
+elif args.model.startwiths('ResNet')  and args.use_pretrained:
+    if not (args.image_h % 32 == 0 and args.image_w % 32 == 0):
+        print('[CHECK] ' + 'This number of h and w must be divisible by 32')
 settings = args
 settings.class_dim = label_dims
 settings.total_images = img_len
@@ -93,6 +105,14 @@ pretrained_url = {
                 'MobileNetV1_x0_25': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_x0_25_pretrained.tar',
                 'MobileNetV1_x0_5': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_x0_5_pretrained.tar',
                 'MobileNetV1_x0_75': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_x0_75_pretrained.tar',
+                'MobileNetV1': 'http://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_pretrained.tar',
+                'MobileNetV2_x0_25': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar',
+                'MobileNetV2_x0_5': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar',
+                'MobileNetV2_x0_75': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_75_pretrained.tar',
+                'MobileNetV2': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar',
+                'MobileNetV2_x1_5': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar',
+                'MobileNetV2_x2_0': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar',
+                'MobileNetV3_small_x1_0': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV3_small_x1_0_pretrained.tar',
                 'ResNet101_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet101_vd_pretrained.tar'
                  }
 fc_name = {
@@ -100,6 +120,14 @@ fc_name = {
             'MobileNetV1_x0_25': ['fc7_weights', 'fc7_offset'],
             'MobileNetV1_x0_5': ['fc7_weights', 'fc7_offset'],
             'MobileNetV1_x0_75': ['fc7_weights', 'fc7_offset'],
+            'MobileNetV1': ['fc7_weights', 'fc7_offset'],
+            'MobileNetV2_x0_25': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV2_x0_5': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV2_x0_75': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV2': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV2_x1_5': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV2_x2_0': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV3_small_x1_0': ['fc_weights', 'fc_offset'],
             'ResNet101_vd': ['fc_0.w_0', 'fc_0.b_0']
           }
 if settings.use_pretrained and settings.checkpoint is None:
@@ -125,7 +153,7 @@ from train import *
 try:
     main(settings)
 except AssertionError as e:
-    print(str(e))
+    print('[CHECK] ' + str(e))
     exit(1)
 # TODO：except--out of memory 
 
