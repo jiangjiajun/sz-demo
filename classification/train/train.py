@@ -171,7 +171,7 @@ def train(args):
         except fluid.core.EOFException:
             train_py_reader.reset()
             
-        if do_val:
+        if args.do_val:
             test_batch_id = 0
             test_batch_time_record = []
             test_batch_metrics_record = []
@@ -200,7 +200,7 @@ def train(args):
         train_epoch_time_avg = np.mean(np.array(train_batch_time_record))
         train_epoch_metrics_avg = np.mean(
             np.array(train_batch_metrics_record), axis=0)
-        if do_val:
+        if args.do_val:
             test_epoch_time_avg = np.mean(np.array(test_batch_time_record))
             test_epoch_metrics_avg = np.mean(
                 np.array(test_batch_metrics_record), axis=0)
