@@ -100,9 +100,10 @@ def train(args):
         args=args)
     train_py_reader = train_out[-1]
     train_fetch_vars = train_out[:-1]
-
+    for var in train_fetch_vars:
+        var.persistable = True
     train_fetch_list = [var.name for var in train_fetch_vars]
-
+    
     test_out = build_program(
         is_train=False,
         main_prog=test_prog,
@@ -110,8 +111,10 @@ def train(args):
         args=args)
     test_py_reader = test_out[-1]
     test_fetch_vars = test_out[:-1]
-
+    for var in test_fetch_vars:
+        var.persistable = True
     test_fetch_list = [var.name for var in test_fetch_vars]
+
 
     #Create test_prog and set layers' is_test params to True
     test_prog = test_prog.clone(for_test=True)
@@ -129,12 +132,10 @@ def train(args):
         train_reader,
         batch_size=int(args.batch_size / fluid.core.get_cuda_device_count()),
         drop_last=True)
-
+    train_py_reader.decorate_sample_list_generator(train_reader, place)
     test_reader = reader.val(settings=args)
     test_reader = paddle.batch(
         test_reader, batch_size=args.test_batch_size, drop_last=True)
-
-    train_py_reader.decorate_sample_list_generator(train_reader, place)
     test_py_reader.decorate_sample_list_generator(test_reader, place)
 
     compiled_train_prog = best_strategy_compiled(args, train_prog,
@@ -143,11 +144,8 @@ def train(args):
     for pass_id in range(args.num_epochs):
 
         train_batch_id = 0
-        test_batch_id = 0
         train_batch_time_record = []
-        test_batch_time_record = []
         train_batch_metrics_record = []
-        test_batch_metrics_record = []
 
         train_py_reader.start()
 
@@ -170,6 +168,10 @@ def train(args):
 
         except fluid.core.EOFException:
             train_py_reader.reset()
+            
+        test_batch_id = 0
+        test_batch_time_record = []
+        test_batch_metrics_record = []
 
         test_py_reader.start()
         try:
@@ -195,7 +197,6 @@ def train(args):
         train_epoch_time_avg = np.mean(np.array(train_batch_time_record))
         train_epoch_metrics_avg = np.mean(
             np.array(train_batch_metrics_record), axis=0)
-
         test_epoch_time_avg = np.mean(np.array(test_batch_time_record))
         test_epoch_metrics_avg = np.mean(
             np.array(test_batch_metrics_record), axis=0)
@@ -208,8 +209,8 @@ def train(args):
             save_model(args, exe, train_prog, pass_id)
 
 
-def main():
-    args = parse_args()
+def main(args):
+#     args = parse_args()
     print_arguments(args)
     check_args(args)
     train(args)
