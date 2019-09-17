@@ -65,7 +65,8 @@ python compress.py
 * **image_shape**: 图片大小，默认值: "3,224,224"
 * **batch_size**: batch size大小(所有设备)，默认值: 64
 * **target_ratio**: 裁剪flop数比例， 默认值: 0.5
-* **strategy**: 使用的裁剪策略， 包括Uniform, Sensitive，默认值：Uniform
+* **strategy**: 使用的裁剪策略， 包括Uniform, Sensitive，默认值: Uniform
+* **'use_gpu**: 是否使用GPU, 默认值: True
 
 预处理配置：
 
