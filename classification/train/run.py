@@ -72,14 +72,17 @@ with open(train_txt) as flist:
         if label not in label_list:
             label_list.append(label)
 label_dims = len(label_list)
-
+if not (args.image_h <= args.resize_short_size and args.image_w <= args.resize_short_size):
+    print('[CHECK] ' + 'The image_h and image_w must be lower than resize_short_size!')
+    exit(1)
 if args.model == 'AlexNet' and args.use_pretrained:
     if not (args.image_h == 224 and args.image_w == 224):
         print('[CHECK] ' + 'The AlexNet\'s h and w must be 224!')
-        exit(0)
-elif args.model.startwiths('ResNet')  and args.use_pretrained:
+        exit(1)
+elif args.model.startswith('ResNet')  and '_vd' in args.model and args.use_pretrained:
     if not (args.image_h % 32 == 0 and args.image_w % 32 == 0):
         print('[CHECK] ' + 'This number of h and w must be divisible by 32')
+        exit(1)
 settings = args
 settings.class_dim = label_dims
 settings.total_images = img_len
@@ -105,30 +108,52 @@ pretrained_url = {
                 'MobileNetV1_x0_25': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_x0_25_pretrained.tar',
                 'MobileNetV1_x0_5': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_x0_5_pretrained.tar',
                 'MobileNetV1_x0_75': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_x0_75_pretrained.tar',
-                'MobileNetV1': 'http://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_pretrained.tar',
+                'MobileNetV1_x1_0': 'http://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV1_pretrained.tar',
                 'MobileNetV2_x0_25': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar',
                 'MobileNetV2_x0_5': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar',
                 'MobileNetV2_x0_75': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_75_pretrained.tar',
-                'MobileNetV2': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar',
+                'MobileNetV2_x1_0': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar',
                 'MobileNetV2_x1_5': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar',
                 'MobileNetV2_x2_0': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar',
                 'MobileNetV3_small_x1_0': 'https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV3_small_x1_0_pretrained.tar',
-                'ResNet101_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet101_vd_pretrained.tar'
+                'ResNet18': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet18_pretrained.tar',
+                'ResNet34': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet34_pretrained.tar',
+                'ResNet50': 'http://paddle-imagenet-models-name.bj.bcebos.com/ResNet50_pretrained.tar',
+                'ResNet101': 'http://paddle-imagenet-models-name.bj.bcebos.com/ResNet101_pretrained.tar',
+                'ResNet152': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet152_pretrained.tar',
+                'ResNet50_vc': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet50_vc_pretrained.tar',
+                'ResNet18_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet18_vd_pretrained.tar',
+                'ResNet34_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet34_vd_pretrained.tar',
+                'ResNet50_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet50_vd_pretrained.tar',
+                'ResNet101_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet101_vd_pretrained.tar',
+                'ResNet152_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet152_vd_pretrained.tar',
+                'ResNet200_vd': 'https://paddle-imagenet-models-name.bj.bcebos.com/ResNet200_vd_pretrained.tar'
                  }
 fc_name = {
             'AlexNet': ['fc8_offset', 'fc8_weights'],
             'MobileNetV1_x0_25': ['fc7_weights', 'fc7_offset'],
             'MobileNetV1_x0_5': ['fc7_weights', 'fc7_offset'],
             'MobileNetV1_x0_75': ['fc7_weights', 'fc7_offset'],
-            'MobileNetV1': ['fc7_weights', 'fc7_offset'],
+            'MobileNetV1_x1_0': ['fc7_weights', 'fc7_offset'],
             'MobileNetV2_x0_25': ['fc10_weights', 'fc10_offset'],
             'MobileNetV2_x0_5': ['fc10_weights', 'fc10_offset'],
             'MobileNetV2_x0_75': ['fc10_weights', 'fc10_offset'],
-            'MobileNetV2': ['fc10_weights', 'fc10_offset'],
+            'MobileNetV2_x1_0': ['fc10_weights', 'fc10_offset'],
             'MobileNetV2_x1_5': ['fc10_weights', 'fc10_offset'],
             'MobileNetV2_x2_0': ['fc10_weights', 'fc10_offset'],
             'MobileNetV3_small_x1_0': ['fc_weights', 'fc_offset'],
-            'ResNet101_vd': ['fc_0.w_0', 'fc_0.b_0']
+            'ResNet18': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet34': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet50': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet101': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet152': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet50_vc': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet18_vd': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet34_vd': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet50_vd': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet101_vd': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet152_vd': ['fc_0.w_0', 'fc_0.b_0'],
+            'ResNet200_vd': ['fc_0.w_0', 'fc_0.b_0']
           }
 if settings.use_pretrained and settings.checkpoint is None:
     part = pretrained_url[settings.model].split('/')
