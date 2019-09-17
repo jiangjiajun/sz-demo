@@ -25,10 +25,9 @@ add_arg('class_dim',        int,  1000,                "Class number.")
 add_arg('image_shape',      str,  "3,224,224",         "Input image size")
 add_arg('model',            str,  "MobileNet",          "Set the network to use.")
 add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
-add_arg('compress_config',  str,  'Uniform',                 "The config file for compression with yaml format.")
 add_arg('data_dir',       str, "./zhijian",                "Data path of images.")
 add_arg('target_ratio',       float, 0.8,                "Flops of prune.")
-add_arg('strategy',       str, 'uniform',                "Strategy of prune.")
+add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
 add_arg('img_mean',   float,   [0.485, 0.456, 0.406],    "The mean of input image data")
 add_arg('img_std', float,   [0.229, 0.224, 0.225],   "The std of input image data")
 # yapf: enable
@@ -39,7 +38,7 @@ strategy_list = ['Uniform', 'Sensitive']
 def compress(args):
     assert args.batch_size > 0, 'batch size of input should be more than one'
     image_shape = [int(m) for m in args.image_shape.split(",")]
-
+    print(args.strategy, strategy_list)
     assert args.model in model_list, "{} is not in lists: {}".format(args.model,
                                                                      model_list)
     assert args.strategy in strategy_list, "{} is not in lists: {}".format(args.strategy,
@@ -73,7 +72,7 @@ def compress(args):
     assert os.path.exists(train_file_list), "data directory '{}' is not exist".format(train_file_list)       
     val_file_list = os.path.join(args.data_dir, 'val_list.txt')
     assert os.path.exists(val_file_list), "data directory '{}' is not exist".format(val_file_list)
-    with open(file_list, 'r') as f:
+    with open(train_file_list, 'r') as f:
         lines = f.readlines()
     total_images = len(lines)
     boundaries=[total_images / args.batch_size * 30,
@@ -123,7 +122,7 @@ def compress(args):
         teacher_programs=teacher_programs,
         train_optimizer=opt,
         distiller_optimizer=distiller_optimizer)
-    if args.compress_config == 'Uniform':
+    if args.strategy == 'Uniform':
         compress_config = "configs/filter_pruning_uniform.yaml"
     else:
         compress_config = "configs/filter_pruning_sen.yaml"
