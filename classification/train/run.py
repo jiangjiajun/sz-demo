@@ -32,7 +32,6 @@ add_arg('data_dir',                 str,    "./data/ILSVRC2012/",   "The ImageNe
 add_arg('use_pretrained',           bool,    True,                   "Whether to use pretrained model.")
 add_arg('checkpoint',               str,    None,                   "Whether to resume checkpoint.")
 add_arg('save_step',                int,    1,                      "The steps interval to save checkpoints")
-add_arg('do_val',       bool,  True,        "Whether to use the validation dataset")
 # SOLVER AND HYPERPARAMETERS
 add_arg('model',                    str,    "ResNet50",   "The name of network.")
 add_arg('num_epochs',               int,    120,                    "The number of total epochs.")

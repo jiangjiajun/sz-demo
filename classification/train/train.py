@@ -104,21 +104,20 @@ def train(args):
         var.persistable = True
     train_fetch_list = [var.name for var in train_fetch_vars]
     
-    if args.do_val:
-        test_out = build_program(
-            is_train=False,
-            main_prog=test_prog,
-            startup_prog=startup_prog,
-            args=args)
-        test_py_reader = test_out[-1]
-        test_fetch_vars = test_out[:-1]
-        for var in test_fetch_vars:
-            var.persistable = True
-        test_fetch_list = [var.name for var in test_fetch_vars]
+    test_out = build_program(
+        is_train=False,
+        main_prog=test_prog,
+        startup_prog=startup_prog,
+        args=args)
+    test_py_reader = test_out[-1]
+    test_fetch_vars = test_out[:-1]
+    for var in test_fetch_vars:
+        var.persistable = True
+    test_fetch_list = [var.name for var in test_fetch_vars]
 
 
-        #Create test_prog and set layers' is_test params to True
-        test_prog = test_prog.clone(for_test=True)
+    #Create test_prog and set layers' is_test params to True
+    test_prog = test_prog.clone(for_test=True)
 
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
     place = fluid.CUDAPlace(gpu_id) if args.use_gpu else fluid.CPUPlace()
@@ -134,11 +133,10 @@ def train(args):
         batch_size=int(args.batch_size / fluid.core.get_cuda_device_count()),
         drop_last=True)
     train_py_reader.decorate_sample_list_generator(train_reader, place)
-    if args.do_val:
-        test_reader = reader.val(settings=args)
-        test_reader = paddle.batch(
-            test_reader, batch_size=args.test_batch_size, drop_last=True)
-        test_py_reader.decorate_sample_list_generator(test_reader, place)
+    test_reader = reader.val(settings=args)
+    test_reader = paddle.batch(
+        test_reader, batch_size=args.test_batch_size, drop_last=True)
+    test_py_reader.decorate_sample_list_generator(test_reader, place)
 
     compiled_train_prog = best_strategy_compiled(args, train_prog,
                                                  train_fetch_vars[0])
@@ -171,47 +169,41 @@ def train(args):
         except fluid.core.EOFException:
             train_py_reader.reset()
             
-        if args.do_val:
-            test_batch_id = 0
-            test_batch_time_record = []
-            test_batch_metrics_record = []
+        test_batch_id = 0
+        test_batch_time_record = []
+        test_batch_metrics_record = []
 
-            test_py_reader.start()
-            try:
-                while True:
-                    t1 = time.time()
-                    test_batch_metrics = exe.run(program=test_prog,
-                                                 fetch_list=test_fetch_list)
-                    t2 = time.time()
-                    test_batch_elapse = t2 - t1
-                    test_batch_time_record.append(test_batch_elapse)
+        test_py_reader.start()
+        try:
+            while True:
+                t1 = time.time()
+                test_batch_metrics = exe.run(program=test_prog,
+                                             fetch_list=test_fetch_list)
+                t2 = time.time()
+                test_batch_elapse = t2 - t1
+                test_batch_time_record.append(test_batch_elapse)
 
-                    test_batch_metrics_avg = np.mean(
-                        np.array(test_batch_metrics), axis=1)
-                    test_batch_metrics_record.append(test_batch_metrics_avg)
+                test_batch_metrics_avg = np.mean(
+                    np.array(test_batch_metrics), axis=1)
+                test_batch_metrics_record.append(test_batch_metrics_avg)
 
-                    print_info(pass_id, test_batch_id, args.print_step,
-                               test_batch_metrics_avg, test_batch_elapse, "batch")
-                    sys.stdout.flush()
-                    test_batch_id += 1
+                print_info(pass_id, test_batch_id, args.print_step,
+                           test_batch_metrics_avg, test_batch_elapse, "batch")
+                sys.stdout.flush()
+                test_batch_id += 1
 
-            except fluid.core.EOFException:
-                test_py_reader.reset()
+        except fluid.core.EOFException:
+            test_py_reader.reset()
         train_epoch_time_avg = np.mean(np.array(train_batch_time_record))
         train_epoch_metrics_avg = np.mean(
             np.array(train_batch_metrics_record), axis=0)
-        if args.do_val:
-            test_epoch_time_avg = np.mean(np.array(test_batch_time_record))
-            test_epoch_metrics_avg = np.mean(
-                np.array(test_batch_metrics_record), axis=0)
+        test_epoch_time_avg = np.mean(np.array(test_batch_time_record))
+        test_epoch_metrics_avg = np.mean(
+            np.array(test_batch_metrics_record), axis=0)
 
-            print_info(pass_id, 0, 0,
-                       list(train_epoch_metrics_avg) + list(test_epoch_metrics_avg),
-                       0, "epoch")
-        else:
-            print_info(pass_id, 0, 0,
-                       list(train_epoch_metrics_avg),
-                       0, "epoch")
+        print_info(pass_id, 0, 0,
+                   list(train_epoch_metrics_avg) + list(test_epoch_metrics_avg),
+                   0, "epoch")
         #For now, save model per epoch.
         if pass_id % args.save_step == 0:
             save_model(args, exe, train_prog, pass_id)
