@@ -19,13 +19,13 @@ logging.basicConfig(format='%(asctime)s-%(levelname)s: %(message)s')
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = functools.partial(add_arguments, argparser=parser)
 # yapf: disable
-add_arg('batch_size',       int,  64 * 4,                 "Minibatch size.")
-add_arg('use_gpu',          bool, False,                "Whether to use GPU or not.")
+add_arg('batch_size',       int,  64*4,                 "Minibatch size.")
+add_arg('use_gpu',          bool, True,                "Whether to use GPU or not.")
 add_arg('class_dim',        int,  1000,                "Class number.")
 add_arg('image_shape',      str,  "3,224,224",         "Input image size")
 add_arg('model',            str,  "MobileNet",          "Set the network to use.")
 add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
-add_arg('compress_config',  str,  'uniform',                 "The config file for compression with yaml format.")
+add_arg('compress_config',  str,  'Uniform',                 "The config file for compression with yaml format.")
 add_arg('data_dir',       str, "./zhijian",                "Data path of images.")
 add_arg('target_ratio',       float, 0.8,                "Flops of prune.")
 add_arg('strategy',       str, 'uniform',                "Strategy of prune.")
@@ -68,7 +68,12 @@ def compress(args):
         acc_top1 = fluid.layers.accuracy(input=out, label=label, k=1)
         acc_top5 = fluid.layers.accuracy(input=out, label=label, k=5)
     val_program = fluid.default_main_program().clone()
-    file_list = os.path.join(args.data_dir, 'train_list.txt')
+
+    assert os.path.exists(args.data_dir), "data directory '{}' is not exist".format(args.data_dir)
+    train_file_list = os.path.join(args.data_dir, 'train_list.txt')
+    assert os.path.exists(train_file_list), "data directory '{}' is not exist".format(train_file_list)       
+    val_file_list = os.path.join(args.data_dir, 'val_list.txt')
+    assert os.path.exists(val_file_list), "data directory '{}' is not exist".format(val_file_list)
     with open(file_list, 'r') as f:
         lines = f.readlines()
     total_images = len(lines)
@@ -93,7 +98,6 @@ def compress(args):
             return os.path.exists(os.path.join(args.pretrained_model, var.name))
 
         fluid.io.load_vars(exe, args.pretrained_model, predicate=if_exist)
-    assert os.path.exists(args.data_dir), "data_dir is not exist"
     val_reader = paddle.batch(reader.val(settings=args), batch_size=args.batch_size)
     val_feed_list = [('image', image.name), ('label', label.name)]
     val_fetch_list = [('acc_top1', acc_top1.name), ('acc_top5', acc_top5.name)]
@@ -120,7 +124,7 @@ def compress(args):
         teacher_programs=teacher_programs,
         train_optimizer=opt,
         distiller_optimizer=distiller_optimizer)
-    if args.compress_config == 'uniform':
+    if args.compress_config == 'Uniform':
         compress_config = "configs/filter_pruning_uniform.yaml"
     else:
         compress_config = "configs/filter_pruning_sen.yaml"
