@@ -23,14 +23,15 @@ add_arg('batch_size',       int,  64*4,                 "Minibatch size.")
 add_arg('use_gpu',          bool, True,                "Whether to use GPU or not.")
 add_arg('gpu_id',          str, '0',                "Which GPU is used.")
 add_arg('class_dim',        int,  1000,                "Class number.")
-add_arg('image_shape',      str,  "3,224,224",         "Input image size")
-add_arg('model',            str,  "MobileNet",          "Set the network to use.")
-add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
-add_arg('data_dir',       str, "./zhijian",                "Data path of images.")
-add_arg('target_ratio',       float, 0.8,                "Flops of prune.")
+add_arg('image_width',      str,  '224',         "Input image width")
+add_arg('image_height',      str,  '224',         "Input image height")
+add_arg('model',            str,  '',          "Set the network to use.")
+add_arg('pretrained_model', str,  '',                "Whether to use pretrained model.")
+add_arg('data_dir',       str, '',                "Data path of images.")
+add_arg('target_ratio',       float, 0.5,                "Flops of prune.")
 add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
-add_arg('img_mean',   float,   [0.485, 0.456, 0.406],    "The mean of input image data")
-add_arg('img_std', float,   [0.229, 0.224, 0.225],   "The std of input image data")
+parser.add_argument('--img_mean', nargs='+', type=float, default=[0.485, 0.456, 0.406], help="The mean of input image data")
+parser.add_argument('--img_std', nargs='+', type=float, default=[0.229, 0.224, 0.225], help="The std of input image data")
 # yapf: enable
 
 model_list = [m for m in dir(models) if "__" not in m]
@@ -38,8 +39,7 @@ strategy_list = ['Uniform', 'Sensitive']
 
 def compress(args):
     assert args.batch_size > 0, 'batch size of input should be more than one'
-    image_shape = [int(m) for m in args.image_shape.split(",")]
-    print(args.strategy, strategy_list)
+    image_shape = [3, int(args.image_height) ,int(args.image_width)]
     assert args.model in model_list, "{} is not in lists: {}".format(args.model,
                                                                      model_list)
     assert args.strategy in strategy_list, "{} is not in lists: {}".format(args.strategy,
