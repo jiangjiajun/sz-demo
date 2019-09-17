@@ -118,8 +118,6 @@ def process_image(sample, mode, settings, color_jitter, rotate):
     img = np.array(img).astype('float32').transpose((2, 0, 1)) / 255
     img_mean = np.array(settings.img_mean).reshape((3, 1, 1))
     img_std = np.array(settings.img_std).reshape((3, 1, 1))
-    #print("img_mean:", img_mean)
-    #print("img_std:", img_std)
     img -= img_mean
     img /= img_std
 
@@ -135,7 +133,6 @@ def _reader_creator(file_list,
                     shuffle=False,
                     color_jitter=False,
                     rotate=False,
-                    #data_dir=DATA_DIR,
                     batch_size=1):
     def reader():
         try:
