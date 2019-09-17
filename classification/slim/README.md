@@ -34,11 +34,11 @@ pip install numpy
 
 * train_list.txt: 训练集合的标签文件，每一行采用"空格"分隔图像路径与标注，例如：
 ```
-train/n02483708/n02483708_2436.jpeg 369
+data/image/1.jpg 369
 ```
 * val_list.txt: 验证集合的标签文件，每一行采用"空格"分隔图像路径与标注，例如：
 ```
-val/ILSVRC2012_val_00000001.jpeg 65
+data/image/2.jpg 65
 ```
 
 ### 模型训练
