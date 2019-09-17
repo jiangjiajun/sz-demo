@@ -105,3 +105,7 @@ python run.py \
 * 长宽调整
 * 水平翻转
 
+【备注】
+
+ 1. 没有pretrained model的模型在选择完模型后默认为use_pretrained为False。
+ 2. 部分模型的size是固定的，在选择完模型并确定使用pretrained model后image_h和image_w固定位某个值。（如AlexNet）
