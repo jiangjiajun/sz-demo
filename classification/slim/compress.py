@@ -20,9 +20,8 @@ parser = argparse.ArgumentParser(description=__doc__)
 add_arg = functools.partial(add_arguments, argparser=parser)
 # yapf: disable
 add_arg('batch_size',       int,  64 * 4,                 "Minibatch size.")
-add_arg('use_gpu',          bool, True,                "Whether to use GPU or not.")
-add_arg('total_images',     int,  1281167,              "Training image number.")
-add_arg('class_dim',        int,  9,                "Class number.")
+add_arg('use_gpu',          bool, False,                "Whether to use GPU or not.")
+add_arg('class_dim',        int,  1000,                "Class number.")
 add_arg('image_shape',      str,  "3,224,224",         "Input image size")
 add_arg('model',            str,  "MobileNet",          "Set the network to use.")
 add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
@@ -69,9 +68,13 @@ def compress(args):
         acc_top1 = fluid.layers.accuracy(input=out, label=label, k=1)
         acc_top5 = fluid.layers.accuracy(input=out, label=label, k=5)
     val_program = fluid.default_main_program().clone()
-    boundaries=[args.total_images / args.batch_size * 30,
-                args.total_images / args.batch_size * 60,
-                args.total_images / args.batch_size * 90]
+    file_list = os.path.join(args.data_dir, 'train_list.txt')
+    with open(file_list, 'r') as f:
+        lines = f.readlines()
+    total_images = len(lines)
+    boundaries=[total_images / args.batch_size * 30,
+                total_images / args.batch_size * 60,
+                total_images / args.batch_size * 90]
     values=[0.1, 0.01, 0.001, 0.0001]
     opt = fluid.optimizer.Momentum(
         momentum=0.9,
@@ -135,7 +138,7 @@ def main():
     try:
         compress(args)
     except AssertionError as e:
-        print(e)
+        print("[CHECK] ", e)
         exit(1) 
 
 
