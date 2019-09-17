@@ -96,7 +96,7 @@ def distort_color(img):
     return img
 
 
-def process_image(sample, mode, color_jitter, rotate):
+def process_image(sample, mode, settings, color_jitter, rotate):
     img_path = sample[0]
 
     img = Image.open(img_path)
@@ -116,6 +116,10 @@ def process_image(sample, mode, color_jitter, rotate):
         img = img.convert('RGB')
 
     img = np.array(img).astype('float32').transpose((2, 0, 1)) / 255
+    img_mean = np.array(settings.img_mean).reshape((3, 1, 1))
+    img_std = np.array(settings.img_std).reshape((3, 1, 1))
+    #print("img_mean:", img_mean)
+    #print("img_std:", img_std)
     img -= img_mean
     img /= img_std
 
@@ -127,10 +131,11 @@ def process_image(sample, mode, color_jitter, rotate):
 
 def _reader_creator(file_list,
                     mode,
+                    settings,
                     shuffle=False,
                     color_jitter=False,
                     rotate=False,
-                    data_dir=DATA_DIR,
+                    #data_dir=DATA_DIR,
                     batch_size=1):
     def reader():
         try:
@@ -155,37 +160,37 @@ def _reader_creator(file_list,
                 for line in lines:
                     if mode == 'train' or mode == 'val':
                         img_path, label = line.split()
-                        img_path = os.path.join(data_dir, img_path)
+                        img_path = os.path.join(settings.data_dir, img_path)
                         yield img_path, int(label)
                     elif mode == 'test':
-                        img_path = os.path.join(data_dir, line)
+                        img_path = os.path.join(settings.data_dir, line)
                         yield [img_path]
         except Exception as e:
             print("Reader failed!\n{}".format(str(e)))
             os._exit(1)
 
     mapper = functools.partial(
-        process_image, mode=mode, color_jitter=color_jitter, rotate=rotate)
+        process_image, mode=mode, settings=settings, color_jitter=color_jitter, rotate=rotate)
 
     return paddle.reader.xmap_readers(mapper, reader, THREAD, BUF_SIZE)
 
 
-def train(data_dir=DATA_DIR):
-    file_list = os.path.join(data_dir, 'train_list.txt')
+def train(settings):
+    file_list = os.path.join(settings.data_dir, 'train_list.txt')
     return _reader_creator(
         file_list,
         'train',
         shuffle=True,
         color_jitter=False,
         rotate=False,
-        data_dir=data_dir)
+        settings=settings)
 
 
-def val(data_dir=DATA_DIR):
-    file_list = os.path.join(data_dir, 'val_list.txt')
-    return _reader_creator(file_list, 'val', shuffle=False, data_dir=data_dir)
+def val(settings):
+    file_list = os.path.join(settings.data_dir, 'val_list.txt')
+    return _reader_creator(file_list, 'val', shuffle=False, settings=settings)
 
 
-def test(data_dir=DATA_DIR):
-    file_list = os.path.join(data_dir, 'val_list.txt')
-    return _reader_creator(file_list, 'test', shuffle=False, data_dir=data_dir)
+def test(settings):
+    file_list = os.path.join(settings.data_dir, 'val_list.txt')
+    return _reader_creator(file_list, 'test', shuffle=False, settings=settings)

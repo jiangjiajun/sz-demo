@@ -25,13 +25,13 @@ add_arg('total_images',     int,  1281167,              "Training image number."
 add_arg('class_dim',        int,  9,                "Class number.")
 add_arg('image_shape',      str,  "3,224,224",         "Input image size")
 add_arg('model',            str,  "MobileNet",          "Set the network to use.")
-add_arg('pretrained_model', str,  None,                "Whether to use pretrained model.")
-add_arg('teacher_model',    str,  None,          "Set the teacher network to use.")
+add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
 add_arg('compress_config',  str,  'uniform',                 "The config file for compression with yaml format.")
 add_arg('data_dir',       str, "./zhijian",                "Data path of images.")
-add_arg('target_ratio',       float, 0.8,                "flops of prune.")
-add_arg('strategy',       str, 'uniform',                "strategy of prune.")
-
+add_arg('target_ratio',       float, 0.8,                "Flops of prune.")
+add_arg('strategy',       str, 'uniform',                "Strategy of prune.")
+add_arg('img_mean',   float,   [0.485, 0.456, 0.406],    "The mean of input image data")
+add_arg('img_std', float,   [0.229, 0.224, 0.225],   "The std of input image data")
 # yapf: enable
 
 model_list = [m for m in dir(models) if "__" not in m]
@@ -91,12 +91,12 @@ def compress(args):
 
         fluid.io.load_vars(exe, args.pretrained_model, predicate=if_exist)
     assert os.path.exists(args.data_dir), "data_dir is not exist"
-    val_reader = paddle.batch(reader.val(args.data_dir), batch_size=args.batch_size)
+    val_reader = paddle.batch(reader.val(settings=args), batch_size=args.batch_size)
     val_feed_list = [('image', image.name), ('label', label.name)]
     val_fetch_list = [('acc_top1', acc_top1.name), ('acc_top5', acc_top5.name)]
 
     train_reader = paddle.batch(
-        reader.train(args.data_dir), batch_size=args.batch_size, drop_last=True)
+        reader.train(settings=args), batch_size=args.batch_size, drop_last=True)
     train_feed_list = [('image', image.name), ('label', label.name)]
     train_fetch_list = [('loss', avg_cost.name)]
 
