@@ -45,7 +45,20 @@ data/image/2.jpg 65
 
 数据准备完毕后，可以通过如下的方式启动模型压缩：
 ```
-python compress.py
+python compress.py 
+       --data_dir zhijian/ 
+       --pretrained_model MobileNetV1_pretrained 
+       --model MobileNet 
+       --class_dim 1000 
+       --image_width 224 
+       --image_height 224 
+       --batch_size 256 
+       --target_ratio 0.5 
+       --strategy Uniform 
+       --use_gpu True 
+       --gpu_id 0
+       --img_mean 0.485 0.456 0.406
+       --img_std 0.229 0.224 0.225
 
 ```
 
