@@ -69,7 +69,7 @@ python compress.py
 * **target_ratio**: 裁剪flop数比例， 默认值: 0.5
 * **strategy**: 使用的裁剪策略， 包括Uniform, Sensitive，默认值：Uniform
 
-数据读取器和预处理配置：
+预处理配置：
 
 * **image_mean**: 图片均值，默认值：[0.485, 0.456, 0.406]
 * **image_std**: 图片标准差，默认值：[0.229, 0.224, 0.225]
