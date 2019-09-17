@@ -1,5 +1,3 @@
-中文 | [English](README_en.md)
-
 # 模型压缩
 
 ## 内容
