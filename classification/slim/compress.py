@@ -24,7 +24,7 @@ add_arg('use_gpu',          bool, True,                "Whether to use GPU or no
 add_arg('class_dim',        int,  1000,                "Class number.")
 add_arg('image_shape',      str,  "3,224,224",         "Input image size")
 add_arg('model',            str,  "MobileNet",          "Set the network to use.")
-add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
+add_arg('pretrained_model', str,  '_MobileNetV1_pretrained',                "Whether to use pretrained model.")
 add_arg('data_dir',       str, "./zhijian",                "Data path of images.")
 add_arg('target_ratio',       float, 0.8,                "Flops of prune.")
 add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
@@ -89,7 +89,8 @@ def compress(args):
     place = fluid.CUDAPlace(0) if args.use_gpu else fluid.CPUPlace()
     exe = fluid.Executor(place)
     exe.run(fluid.default_startup_program())
-   
+    
+    assert os.path.exists(args.pretrained_model), "pretrained model directory '{}' is not exist".format(args.pretrained_model) 
     if args.pretrained_model:
 
         def if_exist(var):
