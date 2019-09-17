@@ -21,10 +21,11 @@ add_arg = functools.partial(add_arguments, argparser=parser)
 # yapf: disable
 add_arg('batch_size',       int,  64*4,                 "Minibatch size.")
 add_arg('use_gpu',          bool, True,                "Whether to use GPU or not.")
+add_arg('gpu_id',          str, '0',                "Which GPU is used.")
 add_arg('class_dim',        int,  1000,                "Class number.")
 add_arg('image_shape',      str,  "3,224,224",         "Input image size")
 add_arg('model',            str,  "MobileNet",          "Set the network to use.")
-add_arg('pretrained_model', str,  '_MobileNetV1_pretrained',                "Whether to use pretrained model.")
+add_arg('pretrained_model', str,  'MobileNetV1_pretrained',                "Whether to use pretrained model.")
 add_arg('data_dir',       str, "./zhijian",                "Data path of images.")
 add_arg('target_ratio',       float, 0.8,                "Flops of prune.")
 add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
@@ -86,6 +87,8 @@ def compress(args):
             values=values),
         regularization=fluid.regularizer.L2Decay(4e-5))
 
+    if args.use_gpu:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     place = fluid.CUDAPlace(0) if args.use_gpu else fluid.CPUPlace()
     exe = fluid.Executor(place)
     exe.run(fluid.default_startup_program())
