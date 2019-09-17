@@ -34,7 +34,7 @@ add_arg('img_std', float,   [0.229, 0.224, 0.225],   "The std of input image dat
 # yapf: enable
 
 model_list = [m for m in dir(models) if "__" not in m]
-strategy_list = ['uniform', 'sensitive']
+strategy_list = ['Uniform', 'Sensitive']
 
 def compress(args):
     assert args.batch_size > 0, 'batch size of input should be more than one'
@@ -62,7 +62,6 @@ def compress(args):
         acc_top5 = fluid.layers.accuracy(input=out0, label=label, k=5)
     else:
         out = model.net(input=image, class_dim=args.class_dim)
-        top5 = fluid.layers.topk(out, k=5)
         cost = fluid.layers.cross_entropy(input=out, label=label)
         avg_cost = fluid.layers.mean(x=cost)
         acc_top1 = fluid.layers.accuracy(input=out, label=label, k=1)
