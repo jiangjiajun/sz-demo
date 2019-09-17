@@ -60,7 +60,6 @@ python compress.py
 模型类型和超参配置：
 
 * **model**: 模型名称， 默认值: "MobileNet"
-* **total_images**: 图片数，ImageNet2012，默认值: 1281167
 * **class_dim**: 类别数，默认值: 1000
 * **image_shape**: 图片大小，默认值: "3,224,224"
 * **batch_size**: batch size大小(所有设备)，默认值: 64
