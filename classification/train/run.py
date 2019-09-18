@@ -2,7 +2,6 @@ import argparse
 import functools
 import distutils.util
 import os
-import cv2
 import numpy as np
 
 def add_arguments(argname, type, default, help, argparser, **kwargs):
@@ -24,11 +23,7 @@ def add_arguments(argname, type, default, help, argparser, **kwargs):
         help=help + ' Default: %(default)s.',
         **kwargs)
     
-def cal_mean_std(line):
-    part = line.split(' ')
-    print(os.path.join(settings.data_dir, part[0]))
-    img = cv2.imread(os.path.join(settings.data_dir, part[0]), 1)
-    return np.mean(img[:,:,0]), np.mean(img[:,:,1]), np.mean(img[:,:,2])
+
     
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = functools.partial(add_arguments, argparser=parser)
@@ -106,7 +101,7 @@ settings.total_images = img_len
 # get the dataset's mean and std
 if not settings.use_default_mean_std:
     mean_std_path = os.path.join(settings.data_dir, 'mean_std.txt')
-    if os.path.exists(mean_std_path):
+    if not os.path.exists(mean_std_path):
         with open(mean_std_path, 'r') as flist:
             full_lines = [line.strip() for line in flist]
             line1 = full_lines[0].strip()[1:-1]
@@ -124,27 +119,14 @@ if not settings.use_default_mean_std:
         per_image_Gmean = []
         per_image_Bmean = []
         with open(train_txt,'r') as flist:
-            items = [line.strip() for line in flist]
-            import multiprocessing
-            p = multiprocessing.Pool(6)
-            out = p.map(cal_mean_std, items)
-            p.close()
-            p.join()
-            out = np.array(out)
-            per_image_Bmean = out[:, 0]
-            per_image_Gmean = out[:, 1]
-            per_image_Rmean = out[:, 2]
-        R_mean = np.mean(per_image_Rmean)
-        G_mean = np.mean(per_image_Gmean)
-        B_mean = np.mean(per_image_Bmean)
-        R_std = np.std(per_image_Rmean)
-        G_std = np.std(per_image_Gmean)
-        B_std = np.std(per_image_Bmean)
-        settings.image_mean = [R_mean/255.0, G_mean/255.0, B_mean/255.0]
-        settings.image_std = [R_std/255.0, G_std/255.0, B_std/255.0]
+            from cal_mean_std import CalMeanStd
+            cal_obj = CalMeanStd(settings)
+            mean, std = cal_obj.calculate(flist)
+            settings.image_mean = mean
+            settings.image_std = std
         with open(mean_std_path, 'w') as fw:
-            fw.write(str([R_mean/255.0, G_mean/255.0, B_mean/255.0])+'\n')
-            fw.write(str([R_std/255.0, G_std/255.0, B_std/255.0])+'\n')
+            fw.write(str(mean)+'\n')
+            fw.write(str(std)+'\n')
 else:
     settings.image_mean = [0.485, 0.456, 0.406]
     settings.image_std = [0.229, 0.224, 0.225]

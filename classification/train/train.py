@@ -72,7 +72,6 @@ class EarlyStop(object):
             self.score = current_score
             self.max = current_score
             save_model(args, exe, train_prog, 'best')
-            print('1------')
             return False
         else:
             if abs(self.score-current_score) < self.thresh \
@@ -82,12 +81,11 @@ class EarlyStop(object):
                 self._logger.debug("EarlyStopping: %i / %i" % (self.counter, self.patience))
                 if self.counter >= self.patience:
                     self._logger.info("EarlyStopping: Stop training")
-                print('2------')
-                return True
+                    return True
+                return False
             else:
                 self.counter = 0
                 self.score = current_score
-                print('3------')
                 return False
         
 
