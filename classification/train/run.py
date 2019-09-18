@@ -2,6 +2,8 @@ import argparse
 import functools
 import distutils.util
 import os
+import cv2
+import numpy as np
 
 def add_arguments(argname, type, default, help, argparser, **kwargs):
     """Add argparse's argument. 
@@ -21,6 +23,13 @@ def add_arguments(argname, type, default, help, argparser, **kwargs):
         type=type,
         help=help + ' Default: %(default)s.',
         **kwargs)
+    
+def cal_mean_std(line):
+    part = line.split(' ')
+    print(os.path.join(settings.data_dir, part[0]))
+    img = cv2.imread(os.path.join(settings.data_dir, part[0]), 1)
+    return np.mean(img[:,:,0]), np.mean(img[:,:,1]), np.mean(img[:,:,2])
+    
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = functools.partial(add_arguments, argparser=parser)
 
@@ -42,52 +51,12 @@ add_arg('lr',                       float,  0.1,                    "The learnin
 add_arg('lr_strategy',              str,    "piecewise_decay",      "The learning rate decay strategy.")
 # READER AND PREPROCESS
 add_arg('resize_short_size',        int,    256,                    "The value of resize_short_size")
-add_arg('use_mixup',                bool,   False,                  "Whether to use mixup")
-parser.add_argument('--image_mean', nargs='+', type=float, default=[0.485, 0.456, 0.406], help="The mean of input image data")
-parser.add_argument('--image_std', nargs='+', type=float, default=[0.229, 0.224, 0.225], help="The std of input image data")
-add_arg('use_label_smoothing',      bool,   False,                  "Whether to use label_smoothing")
+add_arg('use_default_mean_std',      bool,   False,                  "Whether to use label_smoothing")
 
 
-args = parser.parse_args()
-if args.use_gpu:
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
-img_size = '3,' + str(args.image_h) + ',' + str(args.image_w)
-data_dir= args.data_dir
-train_txt = data_dir + '/train_list.txt'
-if not os.path.exists(data_dir):
-    print('[CHECK] ' + 'The dataset path is not exists!')
-    exit(1)
-if not os.path.exists(train_txt):
-    print('[CHECK] ' + 'The train list file path is not exists!')
-    exit(1)
-label_list = []
-img_len = 0
-with open(train_txt) as flist:
-    full_lines = [line.strip() for line in flist]
-    img_len = len(full_lines)
-    for line in full_lines:
-        part = line.split(' ')
-        label = int(part[-1])
-        if label not in label_list:
-            label_list.append(label)
-label_dims = len(label_list)
-if not (args.image_h <= args.resize_short_size and args.image_w <= args.resize_short_size):
-    print('[CHECK] ' + 'The image_h and image_w must be lower than resize_short_size!')
-    exit(1)
-if args.model == 'AlexNet' and args.use_pretrained:
-    if not (args.image_h == 224 and args.image_w == 224):
-        print('[CHECK] ' + 'The AlexNet\'s h and w must be 224!')
-        exit(1)
-elif args.model.startswith('ResNet')  and '_vd' in args.model and args.use_pretrained:
-    if not (args.image_h % 32 == 0 and args.image_w % 32 == 0):
-        print('[CHECK] ' + 'This number of h and w must be divisible by 32')
-        exit(1)
-settings = args
-settings.class_dim = label_dims
-settings.total_images = img_len
+settings = parser.parse_args()
 settings.print_step = 10
 settings.test_batch_size = 8
-settings.image_shape = img_size
 settings.random_seed = None
 settings.l2_decay = 1e-4
 settings.momentum_rate = 0.9
@@ -100,6 +69,99 @@ settings.reader_buf_size = 2048
 settings.interpolation = None
 settings.label_smoothing_epsilon = 0.1
 settings.step_epochs = [30, 60, 90]
+settings.use_mixup = False
+settings.use_label_smoothing = False
+
+
+# set the gpu
+if settings.use_gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = settings.gpu_id
+img_size = '3,' + str(settings.image_h) + ',' + str(settings.image_w)
+settings.image_shape = img_size
+
+
+# get the count of images, dims of label
+data_dir= settings.data_dir
+train_txt = data_dir + '/train_list.txt'
+if not os.path.exists(data_dir):
+    print('[CHECK] ' + 'The dataset path is not exists!')
+    exit(1)
+if not os.path.exists(train_txt):
+    print('[CHECK] ' + 'The train list file path is not exists!')
+    exit(1)
+label_list = []
+img_len = 0
+with open(train_txt, 'r') as flist:
+    full_lines = [line.strip() for line in flist]
+    img_len = len(full_lines)
+    for line in full_lines:
+        part = line.split(' ')
+        label = int(part[-1])
+        if label not in label_list:
+            label_list.append(label)        
+label_dims = len(label_list)
+settings.class_dim = label_dims
+settings.total_images = img_len
+
+# get the dataset's mean and std
+if not settings.use_default_mean_std:
+    mean_std_path = os.path.join(settings.data_dir, 'mean_std.txt')
+    if os.path.exists(mean_std_path):
+        with open(mean_std_path, 'r') as flist:
+            full_lines = [line.strip() for line in flist]
+            line1 = full_lines[0].strip()[1:-1]
+            list1 = line1.split(', ')
+            settings.image_mean = []
+            for s in list1:
+                settings.image_mean.append(float(s))
+            line2 = full_lines[1].strip()[1:-1]
+            list2 = line2.split(', ')
+            settings.image_std = []
+            for s in list1:
+                settings.image_std.append(float(s))
+    else:           
+        per_image_Rmean = []
+        per_image_Gmean = []
+        per_image_Bmean = []
+        with open(train_txt,'r') as flist:
+            items = [line.strip() for line in flist]
+            import multiprocessing
+            p = multiprocessing.Pool(6)
+            out = p.map(cal_mean_std, items)
+            p.close()
+            p.join()
+            out = np.array(out)
+            per_image_Bmean = out[:, 0]
+            per_image_Gmean = out[:, 1]
+            per_image_Rmean = out[:, 2]
+        R_mean = np.mean(per_image_Rmean)
+        G_mean = np.mean(per_image_Gmean)
+        B_mean = np.mean(per_image_Bmean)
+        R_std = np.std(per_image_Rmean)
+        G_std = np.std(per_image_Gmean)
+        B_std = np.std(per_image_Bmean)
+        settings.image_mean = [R_mean/255.0, G_mean/255.0, B_mean/255.0]
+        settings.image_std = [R_std/255.0, G_std/255.0, B_std/255.0]
+        with open(mean_std_path, 'w') as fw:
+            fw.write(str([R_mean/255.0, G_mean/255.0, B_mean/255.0])+'\n')
+            fw.write(str([R_std/255.0, G_std/255.0, B_std/255.0])+'\n')
+else:
+    settings.image_mean = [0.485, 0.456, 0.406]
+    settings.image_std = [0.229, 0.224, 0.225]
+    
+# check the image shape
+if not (settings.image_h <= settings.resize_short_size and settings.image_w <= settings.resize_short_size):
+    print('[CHECK] ' + 'The image_h and image_w must be lower than resize_short_size!')
+    exit(1)
+if settings.model == 'AlexNet' and settings.use_pretrained:
+    if not (settings.image_h == 224 and settings.image_w == 224):
+        print('[CHECK] ' + 'The AlexNet\'s h and w must be 224!')
+        exit(1)
+elif settings.model.startswith('ResNet')  and '_vd' in settings.model and settings.use_pretrained:
+    if not (settings.image_h % 32 == 0 and settings.image_w % 32 == 0):
+        print('[CHECK] ' + 'This number of h and w must be divisible by 32')
+        exit(1)
+
 
 # get pretrained model
 pretrained_url = {
@@ -171,6 +233,7 @@ if settings.use_pretrained and settings.checkpoint is None:
             os.remove('./pretrained/' + part[-1][:-4] + '/' + fc_name[settings.model][0])
             os.remove('./pretrained/' + part[-1][:-4] + '/' + fc_name[settings.model][1])
 settings.pretrained_model = './pretrained/' + part[-1][:-4]
+
 
 # start train
 from train import *

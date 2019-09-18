@@ -41,6 +41,7 @@ set_paddle_flags({
 import argparse
 import functools
 import subprocess
+import logging
 
 import paddle
 import paddle.fluid as fluid
@@ -49,6 +50,46 @@ from utils import *
 import models
 from build_model import create_model
 
+
+class EarlyStop(object):
+    def __init__(self, patience, thresh):
+        self.patience = patience
+        self.counter = 0
+        self.score = None
+        self.max = 0
+        self.thresh = thresh
+        if patience < 1:
+            raise ValueError("Argument patience should be positive integer.")
+        self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self._logger.addHandler(logging.NullHandler())
+    
+    def __call__(self, current_score, train_prog, exe, args):
+        if self.score is None:
+            self.score = current_score
+            save_model(args, exe, train_prog, 'best')
+        elif current_score > self.max:
+            self.counter = 0
+            self.score = current_score
+            self.max = current_score
+            save_model(args, exe, train_prog, 'best')
+            print('1------')
+            return False
+        else:
+            if abs(self.score-current_score) < self.thresh \
+                or current_score < self.score:
+                self.counter += 1
+                self.score = current_score
+                self._logger.debug("EarlyStopping: %i / %i" % (self.counter, self.patience))
+                if self.counter >= self.patience:
+                    self._logger.info("EarlyStopping: Stop training")
+                print('2------')
+                return True
+            else:
+                self.counter = 0
+                self.score = current_score
+                print('3------')
+                return False
+        
 
 def build_program(is_train, main_prog, startup_prog, args):
     """build program, and add grad op in program accroding to different mode
@@ -140,7 +181,15 @@ def train(args):
 
     compiled_train_prog = best_strategy_compiled(args, train_prog,
                                                  train_fetch_vars[0])
-
+    '''
+    val_acc_list = [0]
+    patience = 5
+    diff = 0.0001
+    max_val_acc = 0
+    '''
+    patience = 5
+    thresh = 0.0001
+    stop_obj = EarlyStop(patience, thresh)
     for pass_id in range(args.num_epochs):
 
         train_batch_id = 0
@@ -191,9 +240,11 @@ def train(args):
                            test_batch_metrics_avg, test_batch_elapse, "batch")
                 sys.stdout.flush()
                 test_batch_id += 1
-
+                        
         except fluid.core.EOFException:
             test_py_reader.reset()
+            
+        
         train_epoch_time_avg = np.mean(np.array(train_batch_time_record))
         train_epoch_metrics_avg = np.mean(
             np.array(train_batch_metrics_record), axis=0)
@@ -204,13 +255,19 @@ def train(args):
         print_info(pass_id, 0, 0,
                    list(train_epoch_metrics_avg) + list(test_epoch_metrics_avg),
                    0, "epoch")
+        
         #For now, save model per epoch.
         if pass_id % args.save_step == 0:
             save_model(args, exe, train_prog, pass_id)
-
+        
+        #early stop
+        current_val_acc = test_epoch_metrics_avg[1]
+        is_stop = stop_obj(current_val_acc, train_prog, exe, args)
+        if is_stop:
+            break
+    
 
 def main(args):
-#     args = parse_args()
     print_arguments(args)
     check_args(args)
     train(args)
