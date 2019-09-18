@@ -179,15 +179,10 @@ def train(args):
 
     compiled_train_prog = best_strategy_compiled(args, train_prog,
                                                  train_fetch_vars[0])
-    '''
-    val_acc_list = [0]
-    patience = 5
-    diff = 0.0001
-    max_val_acc = 0
-    '''
+
     patience = 5
     thresh = 0.0001
-    stop_obj = EarlyStop(patience, thresh)
+    earlystop = EarlyStop(patience, thresh)
     for pass_id in range(args.num_epochs):
 
         train_batch_id = 0
@@ -260,8 +255,7 @@ def train(args):
         
         #early stop
         current_val_acc = test_epoch_metrics_avg[1]
-        is_stop = stop_obj(current_val_acc, train_prog, exe, args)
-        if is_stop:
+        if earlystop(current_val_acc, train_prog, exe, args):
             break
     
 

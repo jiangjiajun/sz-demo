@@ -120,8 +120,8 @@ if not settings.use_default_mean_std:
         per_image_Bmean = []
         with open(train_txt,'r') as flist:
             from cal_mean_std import CalMeanStd
-            cal_obj = CalMeanStd(settings)
-            mean, std = cal_obj.calculate(flist)
+            cal_meanstd = CalMeanStd(settings.data_dir)
+            mean, std = cal_meanstd.calculate(flist)
             settings.image_mean = mean
             settings.image_std = std
         with open(mean_std_path, 'w') as fw:

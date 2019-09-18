@@ -4,13 +4,13 @@ import numpy as np
 import multiprocessing
 
 class CalMeanStd(object):
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
         
     def cal_per_img(self, line):
         part = line.split(' ')
-        print(os.path.join(self.settings.data_dir, part[0]))
-        img = cv2.imread(os.path.join(self.settings.data_dir, part[0]), 1)
+        print(os.path.join(data_dir, part[0]))
+        img = cv2.imread(os.path.join(data_dir, part[0]), 1)
         return np.mean(img[:,:,0]), np.mean(img[:,:,1]), np.mean(img[:,:,2])
 
     def calculate(self, flist):
