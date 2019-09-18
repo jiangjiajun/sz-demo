@@ -101,7 +101,7 @@ settings.total_images = img_len
 # get the dataset's mean and std
 if not settings.use_default_mean_std:
     mean_std_path = os.path.join(settings.data_dir, 'mean_std.txt')
-    if not os.path.exists(mean_std_path):
+    if os.path.exists(mean_std_path):
         with open(mean_std_path, 'r') as flist:
             full_lines = [line.strip() for line in flist]
             line1 = full_lines[0].strip()[1:-1]
