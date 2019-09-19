@@ -1,3 +1,17 @@
+# Copyright (c) 2019  PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import argparse
 import functools
 import distutils.util
@@ -31,6 +45,7 @@ if __name__ == "__main__":
     add_arg = functools.partial(add_arguments, argparser=parser)
 
     # ENV
+    add_arg("use_auto_finetune", bool, False, "Whether to use Auto Finetune.")
     add_arg("use_gpu", bool, True, "Whether to use GPU.")
     add_arg("gpu_id", str, "0", "Which GPU is used.")
     add_arg("model_save_dir", str, "./output", "The directory path to save model.")
@@ -43,16 +58,25 @@ if __name__ == "__main__":
     # SOLVER AND HYPERPARAMETERS
     add_arg("model", str, "ResNet50", "The name of network.")
     add_arg("num_epochs", int, 120, "The number of total epochs.")
-    add_arg("image_h", int, 224, "input image h")
-    add_arg("image_w", int, 224, "input image w")
+    add_arg("image_h", int, 224, "The input image h.")
+    add_arg("image_w", int, 224, "The input image w.")
     add_arg("batch_size", int, 8, "Minibatch size on a device.")
     add_arg("lr", float, 0.1, "The learning rate.")
     add_arg("lr_strategy", str, "piecewise_decay", "The learning rate decay strategy.")
     # READER AND PREPROCESS
-    add_arg("resize_short_size", int, 256, "The value of resize_short_size")
-    add_arg("use_default_mean_std", bool, False, "Whether to use label_smoothing")
+    add_arg("resize_short_size", int, 256, "The value of resize_short_size.")
+    add_arg("use_default_mean_std", bool, False, "Whether to use label_smoothing.")
+    # FOR AUTO_FINETUNE
+    add_arg(
+        "checkpoint_dir",
+        str,
+        None,
+        "The Auto Finetune's config. No need for our training.",
+    )
 
     settings = parser.parse_args()
+    if settings.checkpoint == "None":
+        settings.checkpoint = None
     settings.print_step = 10
     settings.test_batch_size = 8
     settings.random_seed = None
@@ -71,7 +95,7 @@ if __name__ == "__main__":
     settings.use_label_smoothing = False
 
     # set the gpu
-    if settings.use_gpu:
+    if settings.use_gpu and not settings.use_auto_finetune:
         os.environ["CUDA_VISIBLE_DEVICES"] = settings.gpu_id
     img_size = "3," + str(settings.image_h) + "," + str(settings.image_w)
     settings.image_shape = img_size
@@ -190,7 +214,8 @@ if __name__ == "__main__":
     from train import *
 
     try:
-        main(settings)
+        out = main(settings)
+        print(out, end="")
     except AssertionError as e:
         print("[CHECK] " + str(e))
         exit(1)

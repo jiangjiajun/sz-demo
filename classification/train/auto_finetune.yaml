@@ -1,0 +1,16 @@
+param_list:
+- name : lr
+  init_value : 0.001
+  type : float
+  lower_than : 0.05
+  greater_than : 0.0001
+- name : batch_size
+  init_value : 64
+  type : int
+  lower_than : 128
+  greater_than : 16
+- name : num_epochs
+  init_value : 15
+  type : int
+  lower_than : 20
+  greater_than : 2
