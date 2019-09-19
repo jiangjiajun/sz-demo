@@ -30,6 +30,7 @@ add_arg('pretrained_model', str,  '',                "Whether to use pretrained 
 add_arg('data_dir',       str, '',                "Data path of images.")
 add_arg('target_ratio',       float, 0.5,                "Flops of prune.")
 add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
+add_arg('checkpoint_path', str, './checkpoints',       'Path of save model')
 parser.add_argument('--img_mean', nargs='+', type=float, default=[0.485, 0.456, 0.406], help="The mean of input image data")
 parser.add_argument('--img_std', nargs='+', type=float, default=[0.229, 0.224, 0.225], help="The std of input image data")
 # yapf: enable
@@ -133,6 +134,7 @@ def compress(args):
     com_pass.config(compress_config)
     assert args.target_ratio > 0 and args.target_ratio < 1, "prune ratio should be between 0 and 1"
     com_pass.strategies[0].target_ratio=args.target_ratio
+    com_pass.checkpoint_path = args.checkpoint_path
     com_pass.run()
     pruned_prog = com_pass.eval_graph.program
     fluid.io.save_inference_model("./pruned_model/", [image.name], [out], exe, main_program=pruned_prog)
