@@ -166,10 +166,14 @@ def train(args):
     #init model by checkpoint or pretrianed model.
     init_model(exe, args, train_prog)
 
+    if args.use_gpu:
+        bs = int(args.batch_size / fluid.core.get_cuda_device_count())
+    else:
+        bs = int(args.batch_size)
     train_reader = reader.train(settings=args)
     train_reader = paddle.batch(
         train_reader,
-        batch_size=int(args.batch_size / fluid.core.get_cuda_device_count()),
+        batch_size=bs,
         drop_last=True)
     train_py_reader.decorate_sample_list_generator(train_reader, place)
     test_reader = reader.val(settings=args)
