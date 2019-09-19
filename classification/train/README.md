@@ -91,10 +91,6 @@ python run.py \
 |lr<input type="checkbox" class="rowselector hidden"> | float | 学习率 | 0.1 | 
 |lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
-|use_mixup<input type="checkbox" class="rowselector hidden"> | bool | 是否使用mixup | False | 
-|use_label_smoothing<input type="checkbox" class="rowselector hidden"> | bool | 是否使用label smooth | False | 
-|image_mean<input type="checkbox" class="rowselector hidden"> | list | 图像均值 | [0.485, 0.456, 0.406] | 
-|image_std<input type="checkbox" class="rowselector hidden"> | list | 图像标准差 | [0.229, 0.224, 0.225] | 
 
 **数据读取器说明：** 数据读取器定义在```reader.py```文件中，现在默认基于cv2的数据读取器。当前支持的数据增广方式有：
 

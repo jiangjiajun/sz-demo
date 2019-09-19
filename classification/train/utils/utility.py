@@ -371,7 +371,10 @@ def best_strategy_compiled(args, program, loss):
         build_strategy.enable_inplace = True
 
         exec_strategy = fluid.ExecutionStrategy()
-        exec_strategy.num_threads = fluid.core.get_cuda_device_count()
+        if args.use_gpu:
+            exec_strategy.num_threads = fluid.core.get_cuda_device_count()
+        else:
+            exec_strategy.num_threads = 1
         exec_strategy.num_iteration_per_drop_scope = 10
 
         compiled_program = fluid.CompiledProgram(program).with_data_parallel(
