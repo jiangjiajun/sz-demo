@@ -76,6 +76,7 @@ python run.py \
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
+|use_auto_finetune<input type="checkbox" class="rowselector hidden"> | bool | 是否使用auto finetune | False | 
 |use_gpu<input type="checkbox" class="rowselector hidden"> | bool | 是否使用gpu | True | 
 |gpu_id<input type="checkbox" class="rowselector hidden"> | str | 使用哪一张显卡（有且仅使用1张） | ’0‘ | 
 |model_save_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ | 
