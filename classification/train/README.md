@@ -8,7 +8,7 @@
     - [安装说明](#安装说明)
     - [数据准备](#数据准备)
     - [模型训练](#模型训练)
-
+    - [Auto FineTune的使用](#Auto FineTune的使用)
 ---
 
 ## 简介
@@ -59,6 +59,7 @@ pip install requests
 python run.py \
        --model=ResNet50 \
        --batch_size=32 \
+       --data_dir=./data \
        --image_h=224 \
        --image_w=224 \
        --model_save_dir=output/ \
@@ -76,6 +77,7 @@ python run.py \
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
+|use_auto_finetune<input type="checkbox" class="rowselector hidden"> | bool | 是否使用auto finetune | False |
 |use_gpu<input type="checkbox" class="rowselector hidden"> | bool | 是否使用gpu | True | 
 |gpu_id<input type="checkbox" class="rowselector hidden"> | str | 使用哪一张显卡（有且仅使用1张） | ’0‘ | 
 |model_save_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ | 
@@ -105,3 +107,44 @@ python run.py \
 
  1. 没有pretrained model的模型在选择完模型后默认为use_pretrained为False。
  2. 部分模型的size是固定的，在选择完模型并确定使用pretrained model后image_h和image_w固定位某个值。（如AlexNet）
+
+
+### Auto FineTune的使用
+***安装***：TODO         
+数据准备完毕后，可以通过如下的方式启动训练：
+```
+hub autofinetune run.py \
+       --param_file=auto_finetune.yaml \
+       --cuda=['2','3'] \
+       --popsize=5 \
+       --round=5 \
+       --evaluate_choice=fulltrail \
+       --tuning_strategy=HAZero \
+       --model=ResNet50 \
+       --data_dir=./data \
+       --image_h=224 \
+       --image_w=224 \
+       --model_save_dir=output/ \
+       --lr_strategy=piecewise_decay \
+       --use_pretrained=True
+```
+**参数说明：**
+
+|参数名 | 类型 | 含义 | 默认值 | 
+|---|---|---|---|
+|model_save_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ | 
+|data_dir<input type="checkbox" class="rowselector hidden"> | str | 数据存放路径 | ’./data/ILSVRC2012/‘ | 
+|use_pretrained<input type="checkbox" class="rowselector hidden"> | bool | 是否使用官的方预训练模型 | True | 
+|checkpoint<input type="checkbox" class="rowselector hidden"> | str | 自己的预训练模型（若此参数不为None，上一参数必须为False） | None | 
+|save_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少轮保存模型 | 1 | 
+|model<input type="checkbox" class="rowselector hidden"> | str | 使用哪一类模型 | ’ResNet50‘ | 
+|image_h<input type="checkbox" class="rowselector hidden"> | int | 图像高度 | 224 | 
+|image_w<input type="checkbox" class="rowselector hidden"> | int | 图像宽度 | 224 | 
+|lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
+|resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
+|param_file<input type="checkbox" class="rowselector hidden"> | str | yaml文件路径 | 此为固定值不可替换 | 
+|cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id | ['0'] | 
+|popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数 | 此为固定值不可替换 | 
+|round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数 | 此为固定值不可替换 | 
+|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 分析的策略 | 此为固定值不可替换 | 
+|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | finetune的策略 | 此为固定值不可替换 | 
