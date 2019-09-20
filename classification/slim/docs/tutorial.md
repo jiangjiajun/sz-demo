@@ -59,7 +59,8 @@ python compress.py \
        --gpu_id 0 \
        --img_mean 0.485 0.456 0.406 \
        --img_std 0.229 0.224 0.225 \
-       --checkpoint_path ./checkpoints
+       --checkpoint_path ./checkpoints \
+       --lr 0.001
 
 ```
 
