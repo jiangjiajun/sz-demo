@@ -48,7 +48,7 @@ if __name__ == "__main__":
     add_arg("use_auto_finetune", bool, False, "Whether to use Auto Finetune.")
     add_arg("use_gpu", bool, True, "Whether to use GPU.")
     add_arg("gpu_id", str, "0", "Which GPU is used.")
-    add_arg("model_save_dir", str, "./output", "The directory path to save model.")
+    add_arg("saved_params_dir", str, "./output", "The directory path to save model.")
     add_arg(
         "data_dir", str, "./data/ILSVRC2012/", "The ImageNet dataset root directory."
     )
@@ -66,17 +66,11 @@ if __name__ == "__main__":
     # READER AND PREPROCESS
     add_arg("resize_short_size", int, 256, "The value of resize_short_size.")
     add_arg("use_default_mean_std", bool, False, "Whether to use label_smoothing.")
-    # FOR AUTO_FINETUNE
-    add_arg(
-        "checkpoint_dir",
-        str,
-        None,
-        "The Auto Finetune's config. No need for our training.",
-    )
 
     settings = parser.parse_args()
     if settings.checkpoint == "None":
         settings.checkpoint = None
+    settings.model_save_dir = settings.saved_params_dir
     settings.print_step = 10
     settings.test_batch_size = 8
     settings.random_seed = None
