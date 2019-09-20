@@ -80,7 +80,7 @@ def compress(args):
     boundaries=[total_images / args.batch_size * 30,
                 total_images / args.batch_size * 60,
                 total_images / args.batch_size * 90]
-    values=[0.1, 0.01, 0.001, 0.0001]
+    values=[0.001, 0.0001, 0.00001, 0.000001]
     opt = fluid.optimizer.Momentum(
         momentum=0.9,
         learning_rate=fluid.layers.piecewise_decay(
