@@ -31,6 +31,7 @@ add_arg('data_dir',       str, '',                "Data path of images.")
 add_arg('target_ratio',       float, 0.5,                "Flops of prune.")
 add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
 add_arg('checkpoint_path', str, './checkpoints',       'Path of save model')
+add_arg('lr',       float, 0.001,                "learning rate of model.")
 parser.add_argument('--img_mean', nargs='+', type=float, default=[0.485, 0.456, 0.406], help="The mean of input image data")
 parser.add_argument('--img_std', nargs='+', type=float, default=[0.229, 0.224, 0.225], help="The std of input image data")
 # yapf: enable
@@ -80,7 +81,7 @@ def compress(args):
     boundaries=[total_images / args.batch_size * 30,
                 total_images / args.batch_size * 60,
                 total_images / args.batch_size * 90]
-    values=[0.1, 0.01, 0.001, 0.0001]
+    values=[args.lr, args.lr*0.1, args.lr*0.01, args.lr*0.001]
     opt = fluid.optimizer.Momentum(
         momentum=0.9,
         learning_rate=fluid.layers.piecewise_decay(
