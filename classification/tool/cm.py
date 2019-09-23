@@ -24,7 +24,7 @@ for line in lines:
 file.close()
 
 tick_marks = np.array(range(len(labels))) + 0.5
-def plot_confusion_matrix(cm, title='Confusion Matrix', cmap = plt.cm.autumn):#summer):#viridis):
+def plot_confusion_matrix(cm, title='Confusion Matrix', cmap = plt.cm.summer):#viridis):
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     #plt.text(0, 2, "%0.2s" %(title,), color='red', fontsize=14, va='center', ha='center')
     plt.title('Predict label', y=1.04)
@@ -50,7 +50,6 @@ x, y = np.meshgrid(ind_array, ind_array)
 for x_val, y_val in zip(x.flatten(), y.flatten()):
     c = cm_n[y_val][x_val]
     if (c > 0.01):
-        print(x_val)
         plt.text(x_val, y_val, "%0.2d" %(c,), color='red', fontsize=14, va='center', ha='center')
 #offset the tick
 plt.gca().set_xticks(tick_marks, minor=True)
