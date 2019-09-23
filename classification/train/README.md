@@ -142,10 +142,10 @@ hub autofinetune run.py \
 |image_w<input type="checkbox" class="rowselector hidden"> | int | 图像宽度 | 224 | 
 |lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
-|param_file<input type="checkbox" class="rowselector hidden"> | str | yaml文件路径 | 此为固定值不可替换 | 
-|cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id | ['0'] | 
-|popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数 | 此为固定值不可替换 | 
-|round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数 | 此为固定值不可替换 | 
-|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 分析的策略 | 此为固定值不可替换 | 
-|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | finetune的策略 | 此为固定值不可替换 | 
-|output_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ |
+|param_file<input type="checkbox" class="rowselector hidden"> | str | yaml文件路径（Auto FineTune参数） | 此为固定值不可替换 | 
+|cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id（Auto FineTune参数） | ['0'] | 
+|popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数（Auto FineTune参数） | 此为固定值不可替换 | 
+|round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数（Auto FineTune参数） | 此为固定值不可替换 | 
+|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 分析的策略（Auto FineTune参数） | 此为固定值不可替换 | 
+|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | finetune的策略（Auto FineTune参数） | 此为固定值不可替换 | 
+|output_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径（Auto FineTune参数） | ’./output‘ |
