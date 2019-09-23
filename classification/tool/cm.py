@@ -24,9 +24,8 @@ for line in lines:
 file.close()
 
 tick_marks = np.array(range(len(labels))) + 0.5
-def plot_confusion_matrix(cm, title='Confusion Matrix', cmap = plt.cm.summer):#viridis):
+def plot_confusion_matrix(cm, title='Confusion Matrix', cmap = plt.cm.summer):
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    #plt.text(0, 2, "%0.2s" %(title,), color='red', fontsize=14, va='center', ha='center')
     plt.title('Predict label', y=1.04)
     #fig,ax=plt.subplots(1,1)
     plt.colorbar()
