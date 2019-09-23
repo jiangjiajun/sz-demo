@@ -109,7 +109,7 @@ python run.py \
 
 
 ### Auto FineTune的使用
-***安装***：TODO         
+***安装***：参考[PaddleHub安装教程](https://github.com/PaddlePaddle/PaddleHub/tree/develop)         
 数据准备完毕后，可以通过如下的方式启动训练：
 ```
 hub autofinetune run.py \
