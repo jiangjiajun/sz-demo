@@ -146,6 +146,6 @@ hub autofinetune run.py \
 |cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id（Auto FineTune参数） | ['0'] | 
 |popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数（Auto FineTune参数） | 此为固定值不可替换 | 
 |round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数（Auto FineTune参数） | 此为固定值不可替换 | 
-|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 分析的策略（Auto FineTune参数） | 此为固定值不可替换 | 
-|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | finetune的策略（Auto FineTune参数） | 此为固定值不可替换 | 
+|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 超参优化评价策略（Auto FineTune参数） | 此为固定值不可替换 | 
+|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | 超参优化搜索策略（Auto FineTune参数） | 此为固定值不可替换 | 
 |output_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径（Auto FineTune参数） | ’./output‘ |
