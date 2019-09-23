@@ -62,7 +62,7 @@ python run.py \
        --data_dir=./data \
        --image_h=224 \
        --image_w=224 \
-       --model_save_dir=output/ \
+       --saved_params_dir=output/ \
        --lr_strategy=piecewise_decay \
        --lr=0.1 \
        --num_epochs=30 \
@@ -77,12 +77,11 @@ python run.py \
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
-|use_auto_finetune<input type="checkbox" class="rowselector hidden"> | bool | 是否使用auto finetune | False |
 |use_gpu<input type="checkbox" class="rowselector hidden"> | bool | 是否使用gpu | True | 
 |gpu_id<input type="checkbox" class="rowselector hidden"> | str | 使用哪一张显卡（有且仅使用1张） | ’0‘ | 
-|model_save_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ | 
+|saved_params_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ | 
 |data_dir<input type="checkbox" class="rowselector hidden"> | str | 数据存放路径 | ’./data/ILSVRC2012/‘ | 
-|use_pretrained<input type="checkbox" class="rowselector hidden"> | bool | 是否使用官的方预训练模型 | True | 
+|use_pretrained<input type="checkbox" class="rowselector hidden"> | bool | 是否使用官方预训练模型 | True | 
 |checkpoint<input type="checkbox" class="rowselector hidden"> | str | 自己的预训练模型（若此参数不为None，上一参数必须为False） | None | 
 |save_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少轮保存模型 | 1 | 
 |model<input type="checkbox" class="rowselector hidden"> | str | 使用哪一类模型 | ’ResNet50‘ | 
@@ -120,21 +119,22 @@ hub autofinetune run.py \
        --round=5 \
        --evaluate_choice=fulltrail \
        --tuning_strategy=HAZero \
-       --model=ResNet50 \
-       --data_dir=./data \
-       --image_h=224 \
-       --image_w=224 \
-       --model_save_dir=output/ \
-       --lr_strategy=piecewise_decay \
-       --use_pretrained=True
+       --output_dir=./output \
+       model ResNet50 \
+       data_dir ./data \
+       image_h 224 \
+       image_w 224 \
+       lr_strategy piecewise_decay \
+       use_pretrained True \
+       use_auto_finetune True
 ```
 **参数说明：**
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
-|model_save_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ | 
 |data_dir<input type="checkbox" class="rowselector hidden"> | str | 数据存放路径 | ’./data/ILSVRC2012/‘ | 
-|use_pretrained<input type="checkbox" class="rowselector hidden"> | bool | 是否使用官的方预训练模型 | True | 
+|use_pretrained<input type="checkbox" class="rowselector hidden"> | bool | 是否使用官方预训练模型 | True | 
+|use_auto_finetune<input type="checkbox" class="rowselector hidden"> | bool | 是否使用AutoFineTune | False | 
 |checkpoint<input type="checkbox" class="rowselector hidden"> | str | 自己的预训练模型（若此参数不为None，上一参数必须为False） | None | 
 |save_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少轮保存模型 | 1 | 
 |model<input type="checkbox" class="rowselector hidden"> | str | 使用哪一类模型 | ’ResNet50‘ | 
@@ -148,3 +148,4 @@ hub autofinetune run.py \
 |round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数 | 此为固定值不可替换 | 
 |evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 分析的策略 | 此为固定值不可替换 | 
 |tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | finetune的策略 | 此为固定值不可替换 | 
+|output_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径 | ’./output‘ |
