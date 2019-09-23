@@ -216,5 +216,4 @@ if __name__ == "__main__":
         exit(1)
     # TODO：except--out of memory
 
-    print("Train Over!")
     exit(0)
