@@ -86,9 +86,9 @@ def random_crop(img, size, settings, scale=None, ratio=None,
     img = img[i:i + h, j:j + w, :]
 
     if interpolation:
-        resized = cv2.resize(img, (size, size), interpolation=interpolation)
+        resized = cv2.resize(img, (size[2], size[1]), interpolation=interpolation)
     else:
-        resized = cv2.resize(img, (size, size))
+        resized = cv2.resize(img, (size[2], size[1]))
     return resized
 
 
@@ -141,13 +141,13 @@ def crop_image(img, target_size, center):
     height, width = img.shape[:2]
     size = target_size
     if center == True:
-        w_start = (width - size) // 2
-        h_start = (height - size) // 2
+        w_start = (width - size[2]) // 2
+        h_start = (height - size[1]) // 2
     else:
-        w_start = np.random.randint(0, width - size + 1)
-        h_start = np.random.randint(0, height - size + 1)
-    w_end = w_start + size
-    h_end = h_start + size
+        w_start = np.random.randint(0, width - size[2] + 1)
+        h_start = np.random.randint(0, height - size[1] + 1)
+    w_end = w_start + size[2]
+    h_end = h_start + size[1]
     img = img[h_start:h_end, w_start:w_end, :]
     return img
 
@@ -206,22 +206,22 @@ def process_image(sample, settings, mode, color_jitter, rotate):
 
     mean = settings.image_mean
     std = settings.image_std
-    crop_size = settings.crop_size
-
+#     crop_size = settings.crop_size
+    crop_size = (3, settings.image_h, settings.image_w)
     img_path = sample[0]
     img = cv2.imread(img_path)
 
     if mode == 'train':
         if rotate:
             img = rotate_image(img)
-        if crop_size > 0:
+        if crop_size[1] > 0 and  crop_size[2] > 0:
             img = random_crop(img, crop_size, settings)
         if color_jitter:
             img = distort_color(img)
         if np.random.randint(0, 2) == 1:
             img = img[:, ::-1, :]
     else:
-        if crop_size > 0:
+        if crop_size[1] > 0 and  crop_size[2] > 0:
             target_size = settings.resize_short_size
             img = resize_short(img, target_size)
             img = crop_image(img, target_size=crop_size, center=True)
@@ -292,7 +292,7 @@ def train(settings):
     """
     file_list = os.path.join(settings.data_dir, 'train_list.txt')
     assert os.path.isfile(
-        file_list), "{} doesn't exist, please check data list path".format(
+        file_list), "{} doesn't exist, please check train data list path".format(
             file_list)
     reader = _reader_creator(
         settings,
@@ -319,7 +319,7 @@ def val(settings):
     """
     file_list = os.path.join(settings.data_dir, 'val_list.txt')
     assert os.path.isfile(
-        file_list), "{} doesn't exist, please check data list path".format(
+        file_list), "{} doesn't exist, please check val data list path".format(
             file_list)
 
     return _reader_creator(
@@ -337,7 +337,7 @@ def test(settings):
     """
     file_list = os.path.join(settings.data_dir, 'val_list.txt')
     assert os.path.isfile(
-        file_list), "{} doesn't exist, please check data list path".format(
+        file_list), "{} doesn't exist, please check test data list path".format(
             file_list)
     return _reader_creator(
         settings, file_list, 'test', shuffle=False, data_dir=settings.data_dir)

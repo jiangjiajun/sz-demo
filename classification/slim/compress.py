@@ -16,33 +16,36 @@ from utility import add_arguments, print_arguments
 from paddle.fluid.contrib.slim import Compressor
 
 logging.basicConfig(format='%(asctime)s-%(levelname)s: %(message)s')
-_logger = logging.getLogger(__name__)
-_logger.setLevel(logging.INFO)
-
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = functools.partial(add_arguments, argparser=parser)
 # yapf: disable
 add_arg('batch_size',       int,  64*4,                 "Minibatch size.")
 add_arg('use_gpu',          bool, True,                "Whether to use GPU or not.")
-add_arg('total_images',     int,  1281167,              "Training image number.")
+add_arg('gpu_id',          str, '0',                "Which GPU is used.")
 add_arg('class_dim',        int,  1000,                "Class number.")
-add_arg('image_shape',      str,  "3,224,224",         "Input image size")
-add_arg('model',            str,  "MobileNet",          "Set the network to use.")
-add_arg('pretrained_model', str,  None,                "Whether to use pretrained model.")
-add_arg('teacher_model',    str,  None,          "Set the teacher network to use.")
-add_arg('teacher_pretrained_model', str,  None,                "Whether to use pretrained model.")
-add_arg('compress_config',  str,  None,                 "The config file for compression with yaml format.")
-add_arg('quant_only',       bool, False,                "Only do quantization-aware training.")
+add_arg('image_width',      str,  '224',         "Input image width")
+add_arg('image_height',      str,  '224',         "Input image height")
+add_arg('model',            str,  '',          "Set the network to use.")
+add_arg('pretrained_model', str,  '',                "Whether to use pretrained model.")
+add_arg('data_dir',       str, '',                "Data path of images.")
+add_arg('target_ratio',       float, 0.5,                "Flops of prune.")
+add_arg('strategy',       str, 'Uniform',                "Strategy of prune.")
+add_arg('checkpoint_path', str, './checkpoints',       'Path of save model')
+add_arg('lr',       float, 0.001,                "learning rate of model.")
+parser.add_argument('--img_mean', nargs='+', type=float, default=[0.485, 0.456, 0.406], help="The mean of input image data")
+parser.add_argument('--img_std', nargs='+', type=float, default=[0.229, 0.224, 0.225], help="The std of input image data")
 # yapf: enable
 
 model_list = [m for m in dir(models) if "__" not in m]
-
+strategy_list = ['Uniform', 'Sensitive']
 
 def compress(args):
-    image_shape = [int(m) for m in args.image_shape.split(",")]
-
+    assert args.batch_size > 0, 'batch size of input should be more than one'
+    image_shape = [3, int(args.image_height) ,int(args.image_width)]
     assert args.model in model_list, "{} is not in lists: {}".format(args.model,
                                                                      model_list)
+    assert args.strategy in strategy_list, "{} is not in lists: {}".format(args.strategy,
+                                                                           strategy_list)
     image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
     label = fluid.layers.data(name='label', shape=[1], dtype='int64')
     # model definition
@@ -66,15 +69,19 @@ def compress(args):
         acc_top1 = fluid.layers.accuracy(input=out, label=label, k=1)
         acc_top5 = fluid.layers.accuracy(input=out, label=label, k=5)
     val_program = fluid.default_main_program().clone()
-    if args.quant_only:
-        boundaries=[args.total_images / args.batch_size * 10,
-                    args.total_images / args.batch_size * 16]
-        values=[1e-4, 1e-5, 1e-6]
-    else:
-        boundaries=[args.total_images / args.batch_size * 30,
-                    args.total_images / args.batch_size * 60,
-                    args.total_images / args.batch_size * 90]
-        values=[0.1, 0.01, 0.001, 0.0001]
+
+    assert os.path.exists(args.data_dir), "data directory '{}' is not exist".format(args.data_dir)
+    train_file_list = os.path.join(args.data_dir, 'train_list.txt')
+    assert os.path.exists(train_file_list), "data directory '{}' is not exist".format(train_file_list)       
+    val_file_list = os.path.join(args.data_dir, 'val_list.txt')
+    assert os.path.exists(val_file_list), "data directory '{}' is not exist".format(val_file_list)
+    with open(train_file_list, 'r') as f:
+        lines = f.readlines()
+    total_images = len(lines)
+    boundaries=[total_images / args.batch_size * 30,
+                total_images / args.batch_size * 60,
+                total_images / args.batch_size * 90]
+    values=[args.lr, args.lr*0.1, args.lr*0.01, args.lr*0.001]
     opt = fluid.optimizer.Momentum(
         momentum=0.9,
         learning_rate=fluid.layers.piecewise_decay(
@@ -82,57 +89,30 @@ def compress(args):
             values=values),
         regularization=fluid.regularizer.L2Decay(4e-5))
 
+    if args.use_gpu:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     place = fluid.CUDAPlace(0) if args.use_gpu else fluid.CPUPlace()
     exe = fluid.Executor(place)
     exe.run(fluid.default_startup_program())
-
+    
+    assert os.path.exists(args.pretrained_model), "pretrained model directory '{}' is not exist".format(args.pretrained_model) 
     if args.pretrained_model:
 
         def if_exist(var):
             return os.path.exists(os.path.join(args.pretrained_model, var.name))
 
         fluid.io.load_vars(exe, args.pretrained_model, predicate=if_exist)
-
-    val_reader = paddle.batch(reader.val(), batch_size=args.batch_size)
+    val_reader = paddle.batch(reader.val(settings=args), batch_size=args.batch_size)
     val_feed_list = [('image', image.name), ('label', label.name)]
     val_fetch_list = [('acc_top1', acc_top1.name), ('acc_top5', acc_top5.name)]
 
     train_reader = paddle.batch(
-        reader.train(), batch_size=args.batch_size, drop_last=True)
+        reader.train(settings=args), batch_size=args.batch_size, drop_last=True)
     train_feed_list = [('image', image.name), ('label', label.name)]
     train_fetch_list = [('loss', avg_cost.name)]
 
     teacher_programs = []
     distiller_optimizer = None
-    if args.teacher_model:
-        teacher_model = models.__dict__[args.teacher_model]()
-        # define teacher program
-        teacher_program = fluid.Program()
-        startup_program = fluid.Program()
-        with fluid.program_guard(teacher_program, startup_program):
-            img = teacher_program.global_block()._clone_variable(
-                image, force_persistable=False)
-            predict = teacher_model.net(img,
-                                        class_dim=args.class_dim,
-                                        conv1_name='res_conv1',
-                                        fc_name='res_fc')
-        exe.run(startup_program)
-        assert args.teacher_pretrained_model and os.path.exists(
-            args.teacher_pretrained_model
-        ), "teacher_pretrained_model should be set when teacher_model is not None."
-
-        def if_exist(var):
-            return os.path.exists(
-                os.path.join(args.teacher_pretrained_model, var.name))
-
-        fluid.io.load_vars(
-            exe,
-            args.teacher_pretrained_model,
-            main_program=teacher_program,
-            predicate=if_exist)
-
-        distiller_optimizer = opt
-        teacher_programs.append(teacher_program.clone(for_test=True))
 
     com_pass = Compressor(
         place,
@@ -148,14 +128,27 @@ def compress(args):
         teacher_programs=teacher_programs,
         train_optimizer=opt,
         distiller_optimizer=distiller_optimizer)
-    com_pass.config(args.compress_config)
+    if args.strategy == 'Uniform':
+        compress_config = "configs/filter_pruning_uniform.yaml"
+    else:
+        compress_config = "configs/filter_pruning_sen.yaml"
+    com_pass.config(compress_config)
+    assert args.target_ratio > 0 and args.target_ratio < 1, "prune ratio should be between 0 and 1"
+    com_pass.strategies[0].target_ratio=args.target_ratio
+    com_pass.checkpoint_path = args.checkpoint_path
     com_pass.run()
+    pruned_prog = com_pass.eval_graph.program
+    fluid.io.save_inference_model("./pruned_model/", [image.name], [out], exe, main_program=pruned_prog)
 
 
 def main():
     args = parser.parse_args()
     print_arguments(args)
-    compress(args)
+    try:
+        compress(args)
+    except AssertionError as e:
+        print("[CHECK] ", e)
+        exit(1) 
 
 
 if __name__ == '__main__':
