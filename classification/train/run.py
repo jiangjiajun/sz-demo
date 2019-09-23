@@ -17,6 +17,7 @@ import functools
 import distutils.util
 import os
 import numpy as np
+import cv2
 
 
 def add_arguments(argname, type, default, help, argparser, **kwargs):
@@ -82,9 +83,9 @@ if __name__ == "__main__":
     settings.mixup_alpha = 0.2
     settings.reader_thread = 8
     settings.reader_buf_size = 2048
-    settings.interpolation = None
+    settings.interpolation = 1
     settings.label_smoothing_epsilon = 0.1
-    settings.step_epochs = [30, 60, 90]
+    settings.step_epochs = [6, 8, 9, 10]
     settings.use_mixup = False
     settings.use_label_smoothing = False
 
