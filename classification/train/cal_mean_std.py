@@ -9,8 +9,7 @@ class CalMeanStd(object):
         
     def cal_per_img(self, line):
         part = line.split(' ')
-        print(os.path.join(data_dir, part[0]))
-        img = cv2.imread(os.path.join(data_dir, part[0]), 1)
+        img = cv2.imread(os.path.join(self.data_dir, part[0]), 1)
         return np.mean(img[:,:,0]), np.mean(img[:,:,1]), np.mean(img[:,:,2])
 
     def calculate(self, flist):
