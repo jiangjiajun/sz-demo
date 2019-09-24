@@ -132,7 +132,7 @@ if __name__ == "__main__":
                 line2 = full_lines[1].strip()[1:-1]
                 list2 = line2.split(", ")
                 settings.image_std = []
-                for s in list1:
+                for s in list2:
                     settings.image_std.append(float(s))
         else:
             per_image_Rmean = []
@@ -210,11 +210,10 @@ if __name__ == "__main__":
 
     try:
         out = main(settings)
-        print(out, end="")
+        print("AutoFinetuneEval" + "\t" + str(out))
     except AssertionError as e:
         print("[CHECK] " + str(e))
         exit(1)
     # TODO：except--out of memory
 
-    print("Train Over!")
     exit(0)
