@@ -26,6 +26,7 @@ for line in lines:
 file.close()
 
 tick_marks = np.array(range(len(labels))) + 0.5
+
 def plot_confusion_matrix(cm, title='Confusion Matrix', cmap = plt.cm.summer):
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title('Predict label', y=1.04)
