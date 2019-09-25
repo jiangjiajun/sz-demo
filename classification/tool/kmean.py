@@ -11,6 +11,7 @@ from scipy.cluster.vq import *
 from PCV.tools import pca
 
 _file = sys.argv[1]
+num_class = int(sys.argv[2])
 imlist = imtools.get_imlist(str(_file))
 
 imnbr = len(imlist)  # get the number of images
@@ -43,12 +44,12 @@ projected = np.array([dot(V[:40],immatrix[i]-immean) for i in range(imnbr)])
 
 # k-means
 projected = whiten(projected)
-centroids,distortion = kmeans(projected, 10)
+centroids,distortion = kmeans(projected, num_class)
 code,distance = vq(projected,centroids)
 
 os.mkdir('./kmeans_result')
 # plot clusters
-for k in range(10):
+for k in range(num_class):
     ind = where(code==k)[0]
     print("class:",  k, len(ind))
     os.mkdir('./kmeans_result/' + str(k))
