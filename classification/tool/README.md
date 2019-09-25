@@ -2,8 +2,14 @@
 ===
   在我们进行分类的时候，可以通过Confusion Matrix工具对分类结果进行分析，以改善我们的模型。
 
+安装依赖：
+----
+        pip install sklearn
+        pip install matplotlib
+        pip install numpy
+        
 输入文件格式：
---
+---
 使用Confusion Matrix工具需要predict.txt和label.txt两个文件,其中predict.txt存储了预测类别和真实类别，label.txt存储了类别对应的名称，分别为如下格式
 
 predict.txt：
