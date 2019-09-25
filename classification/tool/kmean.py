@@ -46,13 +46,14 @@ projected = whiten(projected)
 centroids,distortion = kmeans(projected, 10)
 code,distance = vq(projected,centroids)
 
+os.mkdir('./kmeans_result')
 # plot clusters
 for k in range(10):
     ind = where(code==k)[0]
-    print("class:", len(ind))
-    for i in range(minimum(len(ind),40)):
-        cv2.imshow("123", immatrix_src[ind[i]])
-        cv2.waitKey()
+    print("class:",  k, len(ind))
+    os.mkdir('./kmeans_result/' + str(k))
+    for i in range(len(ind)):
+        cv2.imwrite('./kmeans_result/' + str(k) + '/' + str(i) + '.jpg', immatrix_src[ind[i]])
 
 
 
