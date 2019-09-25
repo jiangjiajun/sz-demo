@@ -92,6 +92,8 @@ python run.py \
 |lr<input type="checkbox" class="rowselector hidden"> | float | 学习率 | 0.1 | 
 |lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
+|use_distrot<input type="checkbox" class="rowselector hidden"> | bool | 是否使用数据扰动 | True | 
+|use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | 
 
 **数据读取器说明：** 数据读取器定义在```reader.py```文件中，现在默认基于cv2的数据读取器。当前支持的数据增广方式有：
 
@@ -142,6 +144,8 @@ hub autofinetune run.py \
 |image_w<input type="checkbox" class="rowselector hidden"> | int | 图像宽度 | 224 | 
 |lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
+|use_distrot<input type="checkbox" class="rowselector hidden"> | bool | 是否使用数据扰动 | True | 
+|use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | 
 |param_file<input type="checkbox" class="rowselector hidden"> | str | yaml文件路径（AutoFineTune参数） | 此为固定值不可替换 | 
 |cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id（AutoFineTune参数） | ['0'] | 
 |popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数（AutoFineTune参数） | 此为固定值不可替换 | 
