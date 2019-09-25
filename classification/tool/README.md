@@ -35,7 +35,20 @@ label.txt
 ===
 
   很多情况下每一类别中的数据会出现很多重复的状况，这样会对模型造成影响，因此可以尝试使用kmeans对图片进行聚类，筛去重复的图片。
+  
+安装依赖：
+----
+        pip install opencv-python
+        pip install scipy
+        pip install numpy
+        pip install pickle
+        pip install matplotlib
+        
+除以上依赖外，还需要安装PCV：
 
+        git clone https://github.com/jesolem/PCV
+        cd PCV
+        python setup.py install
 使用方式：
 ----
           python kmean.py data_dir
