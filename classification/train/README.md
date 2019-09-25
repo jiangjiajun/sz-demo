@@ -8,7 +8,7 @@
     - [安装说明](#安装说明)
     - [数据准备](#数据准备)
     - [模型训练](#模型训练)
-    - [Auto FineTune的使用](#Auto FineTune的使用)
+    - [Auto FineTune的使用](#AutoFineTune的使用)
 ---
 
 ## 简介
@@ -108,7 +108,7 @@ python run.py \
  2. 部分模型的size是固定的，在选择完模型并确定使用pretrained model后image_h和image_w固定位某个值。（如AlexNet）
 
 
-### Auto FineTune的使用
+### AutoFineTune的使用
 ***安装***：参考[PaddleHub安装教程](https://github.com/PaddlePaddle/PaddleHub/tree/develop)         
 数据准备完毕后，可以通过如下的方式启动训练：
 ```
