@@ -32,13 +32,11 @@ def add_arguments(argname, type, default, help, argparser, **kwargs):
         args = parser.parse_args()
     """
     type = distutils.util.strtobool if type == bool else type
-    argparser.add_argument(
-        "--" + argname,
-        default=default,
-        type=type,
-        help=help + " Default: %(default)s.",
-        **kwargs
-    )
+    argparser.add_argument("--" + argname,
+                           default=default,
+                           type=type,
+                           help=help + " Default: %(default)s.",
+                           **kwargs)
 
 
 if __name__ == "__main__":
@@ -49,10 +47,10 @@ if __name__ == "__main__":
     add_arg("use_auto_finetune", bool, False, "Whether to use Auto Finetune.")
     add_arg("use_gpu", bool, True, "Whether to use GPU.")
     add_arg("gpu_id", str, "0", "Which GPU is used.")
-    add_arg("saved_params_dir", str, "./output", "The directory path to save model.")
-    add_arg(
-        "data_dir", str, "./data/ILSVRC2012/", "The ImageNet dataset root directory."
-    )
+    add_arg("saved_params_dir", str, "./output",
+            "The directory path to save model.")
+    add_arg("data_dir", str, "./data/ILSVRC2012/",
+            "The ImageNet dataset root directory.")
     add_arg("use_pretrained", bool, True, "Whether to use pretrained model.")
     add_arg("checkpoint", str, None, "Whether to resume checkpoint.")
     add_arg("save_step", int, 1, "The steps interval to save checkpoints")
@@ -63,10 +61,14 @@ if __name__ == "__main__":
     add_arg("image_w", int, 224, "The input image w.")
     add_arg("batch_size", int, 8, "Minibatch size on a device.")
     add_arg("lr", float, 0.1, "The learning rate.")
-    add_arg("lr_strategy", str, "piecewise_decay", "The learning rate decay strategy.")
+    add_arg("lr_strategy", str, "piecewise_decay",
+            "The learning rate decay strategy.")
     # READER AND PREPROCESS
     add_arg("resize_short_size", int, 256, "The value of resize_short_size.")
-    add_arg("use_default_mean_std", bool, False, "Whether to use label_smoothing.")
+    add_arg("use_default_mean_std", bool, False,
+            "Whether to use label_smoothing.")
+    add_arg("use_distrot", bool, True, "Whether to distrot image.")
+    add_arg("use_rotate", bool, True, "Whether to rotate image.")
 
     settings = parser.parse_args()
     if settings.checkpoint == "None":
@@ -85,7 +87,7 @@ if __name__ == "__main__":
     settings.reader_buf_size = 2048
     settings.interpolation = 1
     settings.label_smoothing_epsilon = 0.1
-    settings.step_epochs = [6, 8, 9, 10]
+    settings.step_epochs = [10, 20, 30, 40]
     settings.use_mixup = False
     settings.use_label_smoothing = False
 
@@ -153,25 +155,20 @@ if __name__ == "__main__":
         settings.image_std = [0.229, 0.224, 0.225]
 
     # check the image shape
-    if not (
-        settings.image_h <= settings.resize_short_size
-        and settings.image_w <= settings.resize_short_size
-    ):
-        print(
-            "[CHECK] " + "The image_h and image_w must be lower than resize_short_size!"
-        )
+    if not (settings.image_h <= settings.resize_short_size
+            and settings.image_w <= settings.resize_short_size):
+        print("[CHECK] " +
+              "The image_h and image_w must be lower than resize_short_size!")
         exit(1)
     if settings.model == "AlexNet" and settings.use_pretrained:
         if not (settings.image_h == 224 and settings.image_w == 224):
             print("[CHECK] " + "The AlexNet's h and w must be 224!")
             exit(1)
-    elif (
-        settings.model.startswith("ResNet")
-        and "_vd" in settings.model
-        and settings.use_pretrained
-    ):
+    elif (settings.model.startswith("ResNet") and "_vd" in settings.model
+          and settings.use_pretrained):
         if not (settings.image_h % 32 == 0 and settings.image_w % 32 == 0):
-            print("[CHECK] " + "This number of h and w must be divisible by 32")
+            print("[CHECK] " +
+                  "This number of h and w must be divisible by 32")
             exit(1)
 
     # get pretrained model
@@ -194,15 +191,11 @@ if __name__ == "__main__":
                 tar.extract(name, path="./pretrained")
             if settings.class_dim != 1000:
                 os.remove(
-                    os.path.join(
-                        "./pretrained", part[-1][:-4], fc_name[settings.model][0]
-                    )
-                )
+                    os.path.join("./pretrained", part[-1][:-4],
+                                 fc_name[settings.model][0]))
                 os.remove(
-                    os.path.join(
-                        "./pretrained", part[-1][:-4], fc_name[settings.model][1]
-                    )
-                )
+                    os.path.join("./pretrained", part[-1][:-4],
+                                 fc_name[settings.model][1]))
     settings.pretrained_model = os.path.join("./pretrained", part[-1][:-4])
 
     # start train
