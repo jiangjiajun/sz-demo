@@ -1,14 +1,14 @@
 # -*- coding: UTF-8 -*-
 import cv2
 import os
-from PCV.tools import imtools
+import numpy as np
+import sys
 import pickle
+from PCV.tools import imtools
 from scipy import *
 from pylab import *
 from scipy.cluster.vq import *
 from PCV.tools import pca
-import numpy as np
-import sys
 
 _file = sys.argv[1]
 imlist = imtools.get_imlist(str(_file))
