@@ -60,5 +60,4 @@ plt.grid(True, which='minor', linestyle='-')
 plt.gcf().subplots_adjust(bottom=0.15)
 
 plot_confusion_matrix(cm_n, title='Normalized confusion matrix')
-#show confusion matrix
-plt.show()
+plt.savefig('./cm.jpg')
