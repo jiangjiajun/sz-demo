@@ -57,6 +57,6 @@ label.txt
         python setup.py install
 使用方式：
 ----
-          python kmean.py data_dir
+          python kmean.py data_dir num_class
 
-其中data_dir代表了图像数据的路径
+其中data_dir指的是图像数据的路径, num_class 指的是想要聚类的类别数。
