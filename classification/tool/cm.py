@@ -36,10 +36,10 @@ parser = argparse.ArgumentParser(description=__doc__)
 add_arg = functools.partial(add_arguments, argparser=parser)
 
 add_arg('output_dir',       str,  'None',                 "Directory of output")
-add_arg('img_h',       int,  '2000',                 "height of output image")
-add_arg('img_w',       int,  '2000',                 "width of output image")
-add_arg('label_dir',       str,  'None',                 "Directory of label.txt")
-add_arg('predict_dir',       str,  'None',                 "Directory of predict.txt")
+add_arg('img_h',       int,  '2000',                 "Height of output image")
+add_arg('img_w',       int,  '2000',                 "Width of output image")
+add_arg('label_file',       str,  'None',                 "Directory of label.txt")
+add_arg('predict_file',       str,  'None',                 "Directory of predict.txt")
 
 
 def start_cm(args):
