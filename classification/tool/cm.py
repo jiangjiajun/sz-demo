@@ -45,7 +45,7 @@ add_arg('predict_file',       str,  'None',                 "Directory of predic
 def start_cm(args):
     # load labels.
     labels = []
-    file = open(args.label_filr, 'r')
+    file = open(args.label_file, 'r')
     lines = file.readlines()
     for line in lines:
         labels.append(line.strip())
