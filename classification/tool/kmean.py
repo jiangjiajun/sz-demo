@@ -6,7 +6,7 @@ import sys
 import pickle
 import argparse
 import functools
-import random
+import random as rdm
 #import matplotlib
 #matplotlib.use('TkAgg')
 from PCV.tools import imtools
@@ -14,7 +14,6 @@ from scipy import *
 from pylab import *
 from scipy.cluster.vq import *
 from PCV.tools import pca
-import random as rdm
 
 
 def add_arguments(argname, type, default, help, argparser, **kwargs):
