@@ -14,6 +14,7 @@ from scipy import *
 from pylab import *
 from scipy.cluster.vq import *
 from PCV.tools import pca
+import random as rdm
 
 
 def add_arguments(argname, type, default, help, argparser, **kwargs):
@@ -57,16 +58,17 @@ def start_kmeans(args):
     # Keep the mean and principal components
     now = int(round(time.time() * 1000))
 
-    f = open(now + '.pkl', 'wb')
+    f = open(str(now) + '.pkl', 'wb')
     pickle.dump(immean, f)
     pickle.dump(V, f)
     f.close()
 
     # load model file
-    with open(now + '.pkl', 'rb') as f:
+    with open(str(now) + '.pkl', 'rb') as f:
         immean = pickle.load(f)
         V = pickle.load(f)
 
+    os.remove(str(now) + '.pkl')
     # create matrix to store all flattened images
     immatrix = np.array([np.array(cv2.imread(im)).flatten() for im in imlist])
     immatrix_src = np.array([np.array(cv2.imread(im)) for im in imlist])
@@ -79,15 +81,16 @@ def start_kmeans(args):
     projected = whiten(projected)
     centroids, distortion = kmeans(projected, args.num_class)
     code, distance = vq(projected, centroids)
-
-    os.mkdir(os.path.join(args.output_dir, 'kmeans_result'))
-    output_path = os.path.join(args.output_dir, 'kmeans_result')
+   
+    output_path = os.path.join(args.output_dir, 'kmeans_result') 
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
     # plot clusters
     for k in range(args.num_class):
         ind = where(code == k)[0]
         print("class:", k, len(ind))
         os.mkdir(os.path.join(output_path, str(k)))
-        i = random.randint(0,len(ind))
+        i = rdm.randint(0,len(ind))
         cv2.imwrite(os.path.join(os.path.join(output_path, str(k)), str(i) + '.jpg'), immatrix_src[ind[i]])
 
 def main():
