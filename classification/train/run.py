@@ -18,6 +18,8 @@ import distutils.util
 import os
 import numpy as np
 import cv2
+import yaml
+from types import SimpleNamespace
 
 
 def add_arguments(argname, type, default, help, argparser, **kwargs):
@@ -44,35 +46,16 @@ if __name__ == "__main__":
     add_arg = functools.partial(add_arguments, argparser=parser)
 
     # ENV
-    add_arg("use_auto_finetune", bool, False, "Whether to use Auto Finetune.")
-    add_arg("use_gpu", bool, True, "Whether to use GPU.")
-    add_arg("gpu_id", str, "0", "Which GPU is used.")
-    add_arg("saved_params_dir", str, "./output",
-            "The directory path to save model.")
-    add_arg("data_dir", str, "./data/ILSVRC2012/",
-            "The ImageNet dataset root directory.")
-    add_arg("use_pretrained", bool, True, "Whether to use pretrained model.")
-    add_arg("checkpoint", str, None, "Whether to resume checkpoint.")
-    add_arg("save_step", int, 1, "The steps interval to save checkpoints")
-    # SOLVER AND HYPERPARAMETERS
-    add_arg("model", str, "ResNet50", "The name of network.")
-    add_arg("num_epochs", int, 120, "The number of total epochs.")
-    add_arg("image_h", int, 224, "The input image h.")
-    add_arg("image_w", int, 224, "The input image w.")
-    add_arg("batch_size", int, 8, "Minibatch size on a device.")
-    add_arg("lr", float, 0.1, "The learning rate.")
-    add_arg("lr_strategy", str, "piecewise_decay",
-            "The learning rate decay strategy.")
-    # READER AND PREPROCESS
-    add_arg("resize_short_size", int, 256, "The value of resize_short_size.")
-    add_arg("use_default_mean_std", bool, False,
-            "Whether to use label_smoothing.")
-    add_arg("use_distrot", bool, True, "Whether to distrot image.")
-    add_arg("use_rotate", bool, True, "Whether to rotate image.")
-
-    settings = parser.parse_args()
+    add_arg("configs_yaml", str, "./configs/demo.yaml",
+            'The configure yaml file\'s path')
+    args = parser.parse_args()
+    yaml_path = args.configs_yaml
+    file = open(yaml_path)
+    settings_dict = yaml.load(file, Loader=yaml.FullLoader)
+    settings = SimpleNamespace(**settings_dict)
     if settings.checkpoint == "None":
         settings.checkpoint = None
+    settings.gpu_id = str(settings.gpu_id)
     settings.model_save_dir = settings.saved_params_dir
     settings.print_step = 10
     settings.test_batch_size = 8
