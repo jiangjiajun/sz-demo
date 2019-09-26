@@ -67,6 +67,7 @@ python run.py \
 |configs_yaml<input type="checkbox" class="rowselector hidden"> | str | 存放参数的yaml文件路径 | ‘./confifgs/demo.yaml’ |
 
 **yaml文件参数说明：**
+
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
 |use_gpu<input type="checkbox" class="rowselector hidden"> | bool | 是否使用gpu | True | 
@@ -131,6 +132,7 @@ hub autofinetune run.py \
 |configs_yaml<input type="checkbox" class="rowselector hidden"> | str | 存放参数的yaml文件路径 | ‘./confifgs/demo.yaml’ |
 
 **yaml文件参数说明：**
+
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
 |data_dir<input type="checkbox" class="rowselector hidden"> | str | 数据存放路径 | ’./data/ILSVRC2012/‘ | 
