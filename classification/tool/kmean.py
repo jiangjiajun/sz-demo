@@ -54,21 +54,6 @@ def start_kmeans(args):
     # PCA reduce dimension
     V, S, immean = pca.pca(immatrix)
 
-    # Keep the mean and principal components
-    now = int(round(time.time() * 1000))
-
-    f = open(str(now) + '.pkl', 'wb')
-    pickle.dump(immean, f)
-    pickle.dump(V, f)
-    f.close()
-
-    # load model file
-    with open(str(now) + '.pkl', 'rb') as f:
-        immean = pickle.load(f)
-        V = pickle.load(f)
-
-    os.remove(str(now) + '.pkl')
-    # create matrix to store all flattened images
     immatrix = np.array([np.array(cv2.imread(im)).flatten() for im in imlist])
     immatrix_src = np.array([np.array(cv2.imread(im)) for im in imlist])
 
