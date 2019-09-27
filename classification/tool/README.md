@@ -35,7 +35,9 @@ label.txt
  
  使用方式：
  ----
-           python cm.py
+       python cm.py --label_file ./label.txt --predict_file ./predict.txt --output_dir output --img_h 1000 --img_w 1000
+  
+ 其中label_file指的是label.txt的路径，predict_file指的是predict.txt的路径，output_dir指的是输出混淆矩阵图片的保存路径，img_h指的是保存混淆矩阵图片的高，img_w指的是保存混淆矩阵图片的宽。
  
 2、Kmeans 聚类
 ===
@@ -57,6 +59,6 @@ label.txt
         python setup.py install
 使用方式：
 ----
-          python kmean.py data_dir num_class
+          python kmean.py --data_dir data/image  --output_dir output --num_class 6
 
-其中data_dir指的是图像数据的路径, num_class 指的是想要聚类的类别数。
+其中data_dir指的是图像数据的路径, output_dir指的是聚类后图片保存的路径，num_class 指的是想要聚类的类别数。
