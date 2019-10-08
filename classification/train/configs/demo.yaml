@@ -1,6 +1,6 @@
 use_auto_finetune: False
 use_gpu: True
-gpu_id: 0
+gpu_id: 6
 saved_params_dir: ./output
 data_dir: ./data
 use_pretrained: True
@@ -17,3 +17,18 @@ resize_short_size: 256
 use_default_mean_std: False
 use_distrot: True
 use_rotate: True
+print_step: 10
+test_batch_size: 8
+l2_decay: 0.0001
+momentum_rate: 0.9
+lower_scale: 0.08
+lower_ratio: 0.75
+upper_ratio: 1.33
+mixup_alpha: 0.2
+reader_thread: 8
+reader_buf_size: 2048
+interpolation: 1
+label_smoothing_epsilon: 0.1
+step_epochs: 10,20,30,40
+use_mixup: False
+use_label_smoothing: False
