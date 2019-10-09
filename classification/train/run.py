@@ -136,10 +136,12 @@ if __name__ == "__main__":
     data_dir = settings.data_dir
     train_txt = os.path.join(data_dir, "train_list.txt")
     if not os.path.exists(data_dir):
-        print("[CHECK] " + "The dataset path is not exists!")
+        print("[CHECK] " + \
+              "The dataset path \'{}\' is not exists! \
+              You must check the parameter of \'data_dir\' is a real path.".format(data_dir))
         exit(1)
     if not os.path.exists(train_txt):
-        print("[CHECK] " + "The train list file path is not exists!")
+        print("[CHECK] " + "The train_list.txt in dataset path \'{}\' is not exists!".format(data_dir))
         exit(1)
     label_list = []
     img_len = 0
