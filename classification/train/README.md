@@ -64,7 +64,7 @@ python run.py \
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
-|configs_yaml<input type="checkbox" class="rowselector hidden"> | str | 存放参数的yaml文件路径 | ‘./confifgs/demo.yaml’ |
+|configs_yaml<input type="checkbox" class="rowselector hidden"> | str | 存放参数的yaml文件路径 | ‘./configs/demo.yaml’ |
 
 **yaml文件参数说明：**
 
@@ -88,11 +88,26 @@ python run.py \
 |use_default_mean_std<input type="checkbox" class="rowselector hidden"> | bool | 是否使用默认的均值和方差 | False | 
 |use_distrot<input type="checkbox" class="rowselector hidden"> | bool | 是否使用数据扰动 | True | 
 |use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | 
+|print_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少个step输出loss、accuracy信息 | 10 | 
+|test_batch_size<input type="checkbox" class="rowselector hidden"> | int | 测试集的批大小 | 8 | 
+|l2_decay<input type="checkbox" class="rowselector hidden"> | float | l2 decay的参数 | 8 | 
+|momentum_rate<input type="checkbox" class="rowselector hidden"> | float | 冲量的比例 | 8 | 
+|lower_ratio<input type="checkbox" class="rowselector hidden"> | float | 最小长宽缩放比 | 0.75 | 
+|upper_ratio<input type="checkbox" class="rowselector hidden"> | float | 最大长宽缩放比 | 1.33 | 
+|lower_scale<input type="checkbox" class="rowselector hidden"> | float | 最小面积缩放比 | 0.08 | 
+|reader_thread<input type="checkbox" class="rowselector hidden"> | int | 读取数据的线程数 | 8 | 
+|reader_buf_size<input type="checkbox" class="rowselector hidden"> | int | 读取数据时缓冲区的大小 | 2048 | 
+|interpolation<input type="checkbox" class="rowselector hidden"> | int | 对图像进行resize的插值方式 | 1 | 
+|use_label_smoothing<input type="checkbox" class="rowselector hidden"> | bool | 是否使用label smooth | False | 
+|label_smoothing_epsilon<input type="checkbox" class="rowselector hidden"> | float | label smooth的比例 | 0.1 | 
+|use_mixup<input type="checkbox" class="rowselector hidden"> | bool | 是否使用mixup | False | 
+|mixup_alpha<input type="checkbox" class="rowselector hidden"> | float | mixuup的比例 | 0.2 |
+|step_epochs<input type="checkbox" class="rowselector hidden"> | str | 那几个epoch进行学习率衰减，用逗号分隔 | 10,20,30,40 | 
 
 **数据读取器说明：** 数据读取器定义在```reader.py```文件中，现在默认基于cv2的数据读取器。当前支持的数据增广方式有：
 
 * 旋转
-* 颜色抖动（暂未实现）
+* 颜色抖动
 * 随机裁剪
 * 中心裁剪
 * 长宽调整
@@ -147,4 +162,19 @@ hub autofinetune run.py \
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
 |use_default_mean_std<input type="checkbox" class="rowselector hidden"> | bool | 是否使用默认的均值和方差 | False | 
 |use_distrot<input type="checkbox" class="rowselector hidden"> | bool | 是否使用数据扰动 | True | 
-|use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | 
+|use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | |print_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少个step输出loss、accuracy信息 | 10 | 
+|test_batch_size<input type="checkbox" class="rowselector hidden"> | int | 测试集的批大小 | 8 | 
+|l2_decay<input type="checkbox" class="rowselector hidden"> | float | l2 decay的参数 | 8 | 
+|momentum_rate<input type="checkbox" class="rowselector hidden"> | float | 冲量的比例 | 8 | 
+|lower_ratio<input type="checkbox" class="rowselector hidden"> | float | 最小长宽缩放比 | 0.75 | 
+|upper_ratio<input type="checkbox" class="rowselector hidden"> | float | 最大长宽缩放比 | 1.33 | 
+|lower_scale<input type="checkbox" class="rowselector hidden"> | float | 最小面积缩放比 | 0.08 | 
+|reader_thread<input type="checkbox" class="rowselector hidden"> | int | 读取数据的线程数 | 8 | 
+|reader_buf_size<input type="checkbox" class="rowselector hidden"> | int | 读取数据时缓冲区的大小 | 2048 | 
+|interpolation<input type="checkbox" class="rowselector hidden"> | int | 对图像进行resize的插值方式 | 1 | 
+|use_label_smoothing<input type="checkbox" class="rowselector hidden"> | bool | 是否使用label smooth | False | 
+|label_smoothing_epsilon<input type="checkbox" class="rowselector hidden"> | float | label smooth的比例 | 0.1 | 
+|use_mixup<input type="checkbox" class="rowselector hidden"> | bool | 是否使用mixup | False | 
+|mixup_alpha<input type="checkbox" class="rowselector hidden"> | float | mixuup的比例 | 0.2 |
+|step_epochs<input type="checkbox" class="rowselector hidden"> | str | 那几个epoch进行学习率衰减，用逗号分隔 | 10,20,30,40 | 
+
