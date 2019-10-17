@@ -44,15 +44,16 @@ def cosine_decay_with_warmup(learning_rate, step_each_epoch, epochs=120):
     decrease lr for every mini-batch and start with warmup.
     """
     global_step = _decay_step_counter()
-    lr = fluid.layers.tensor.create_global_var(
-        shape=[1],
-        value=0.0,
-        dtype='float32',
-        persistable=True,
-        name="learning_rate")
+    lr = fluid.layers.tensor.create_global_var(shape=[1],
+                                               value=0.0,
+                                               dtype='float32',
+                                               persistable=True,
+                                               name="learning_rate")
 
-    warmup_epoch = fluid.layers.fill_constant(
-        shape=[1], dtype='float32', value=float(5), force_cpu=True)
+    warmup_epoch = fluid.layers.fill_constant(shape=[1],
+                                              dtype='float32',
+                                              value=float(5),
+                                              force_cpu=True)
 
     with init_on_cpu():
         epoch = ops.floor(global_step / step_each_epoch)
@@ -77,14 +78,14 @@ def lr_warmup(learning_rate, warmup_steps, start_lr, end_lr):
     assert (isinstance(start_lr, float))
     linear_step = end_lr - start_lr
     with fluid.default_main_program()._lr_schedule_guard():
-        lr = fluid.layers.tensor.create_global_var(
-            shape=[1],
-            value=0.0,
-            dtype='float32',
-            persistable=True,
-            name="learning_rate_warmup")
+        lr = fluid.layers.tensor.create_global_var(shape=[1],
+                                                   value=0.0,
+                                                   dtype='float32',
+                                                   persistable=True,
+                                                   name="learning_rate_warmup")
 
-        global_step = fluid.layers.learning_rate_scheduler._decay_step_counter()
+        global_step = fluid.layers.learning_rate_scheduler._decay_step_counter(
+        )
 
         with fluid.layers.control_flow.Switch() as switch:
             with switch.case(global_step < warmup_steps):
@@ -111,9 +112,8 @@ class Optimizer(object):
 
         total_images: total images.
         step: total steps in the an epoch.
-        
-    """
 
+    """
     def __init__(self, args):
 
         self.batch_size = args.batch_size
@@ -139,6 +139,7 @@ class Optimizer(object):
         optimizer = fluid.optimizer.Momentum(
             learning_rate=learning_rate,
             momentum=self.momentum_rate,
+            use_nesterov=True,
             regularization=fluid.regularizer.L2Decay(self.l2_decay))
         return optimizer
 
@@ -149,10 +150,9 @@ class Optimizer(object):
             a cosine_decay optimizer
         """
 
-        learning_rate = fluid.layers.cosine_decay(
-            learning_rate=self.lr,
-            step_each_epoch=self.step,
-            epochs=self.num_epochs)
+        learning_rate = fluid.layers.cosine_decay(learning_rate=self.lr,
+                                                  step_each_epoch=self.step,
+                                                  epochs=self.num_epochs)
         optimizer = fluid.optimizer.Momentum(
             learning_rate=learning_rate,
             momentum=self.momentum_rate,
@@ -166,10 +166,9 @@ class Optimizer(object):
             a cosine_decay_with_warmup optimizer
         """
 
-        learning_rate = cosine_decay_with_warmup(
-            learning_rate=self.lr,
-            step_each_epoch=self.step,
-            epochs=self.num_epochs)
+        learning_rate = cosine_decay_with_warmup(learning_rate=self.lr,
+                                                 step_each_epoch=self.step,
+                                                 epochs=self.num_epochs)
         optimizer = fluid.optimizer.Momentum(
             learning_rate=learning_rate,
             momentum=self.momentum_rate,
@@ -184,8 +183,10 @@ class Optimizer(object):
         """
 
         end_lr = 0
-        learning_rate = fluid.layers.polynomial_decay(
-            self.lr, self.step, end_lr, power=1)
+        learning_rate = fluid.layers.polynomial_decay(self.lr,
+                                                      self.step,
+                                                      end_lr,
+                                                      power=1)
         optimizer = fluid.optimizer.Momentum(
             learning_rate=learning_rate,
             momentum=self.momentum_rate,
@@ -196,7 +197,7 @@ class Optimizer(object):
     def adam_decay(self):
         """Adam optimizer
 
-        Returns: 
+        Returns:
             an adam_decay optimizer
         """
 
@@ -205,14 +206,13 @@ class Optimizer(object):
     def cosine_decay_RMSProp(self):
         """cosine decay with RMSProp optimizer
 
-        Returns: 
+        Returns:
             an cosine_decay_RMSProp optimizer
         """
 
-        learning_rate = fluid.layers.cosine_decay(
-            learning_rate=self.lr,
-            step_each_epoch=self.step,
-            epochs=self.num_epochs)
+        learning_rate = fluid.layers.cosine_decay(learning_rate=self.lr,
+                                                  step_each_epoch=self.step,
+                                                  epochs=self.num_epochs)
         optimizer = fluid.optimizer.RMSProp(
             learning_rate=learning_rate,
             momentum=self.momentum_rate,

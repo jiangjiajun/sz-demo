@@ -62,3 +62,26 @@ label.txt
           python kmean.py --data_dir data/image  --output_dir output --num_class 6
 
 其中data_dir指的是图像数据的路径, output_dir指的是聚类后图片保存的路径，num_class 指的是想要聚类的类别数。
+
+3、计算均值和标准差
+===
+
+  多数情况下，读取图像后减去均值和标准差，再进行图像分类，可以增加图像分类的精确度，因此需要计算数据集中图像的均值和标准差。
+  
+安装依赖：
+----
+        pip install opencv-python
+        pip install numpy
+        
+使用方式：
+----
+          python cal_mean_std.py --data_dir ./data
+
+其中data_dir指的是图像数据的路径，该路径下必须存放一个命名为train_list.txt的文件，该文件中的每一行存放相对于当前路径的图像相对路径和图像类别，并用空格分割开，详细如下：
+```
+./train_image/IMG_3655.jpg 0
+./train_image/IMG_3656.jpg 2
+./train_image/IMG_3657.jpg 1
+...
+```
+

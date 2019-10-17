@@ -8,7 +8,7 @@
     - [安装说明](#安装说明)
     - [数据准备](#数据准备)
     - [模型训练](#模型训练)
-    - [Auto FineTune的使用](#Auto FineTune的使用)
+    - [Auto FineTune的使用](#AutoFineTune的使用)
 ---
 
 ## 简介
@@ -22,11 +22,12 @@
 
 #### 环境依赖
 
-python >= 2.7，CUDA >= 8.0，CUDNN >= 7.0
+python >= 2.7，CUDA >= 8.0，CUDNN >= 7.0，Paddle >= 1.5.0
 运行训练代码需要安装numpy，cv2
 使用预训练模型需要requests
 
 ```bash
+pip install paddlepaddle-gpu
 pip install opencv-python
 pip install numpy
 pip install requests
@@ -57,23 +58,15 @@ pip install requests
 数据准备完毕后，可以通过如下的方式启动训练：
 ```
 python run.py \
-       --model=ResNet50 \
-       --batch_size=32 \
-       --data_dir=./data \
-       --image_h=224 \
-       --image_w=224 \
-       --saved_params_dir=output/ \
-       --lr_strategy=piecewise_decay \
-       --lr=0.1 \
-       --num_epochs=30 \
-       --use_pretrained=True
+       --configs_yaml=./confifgs/demo.yaml  \
 ```
-
-注意: 当添加如image_mean和image_std列表型参数，需要去掉"="，如：--image_mean  0.485 0.456 0.406
-
-
-
 **参数说明：**
+
+|参数名 | 类型 | 含义 | 默认值 | 
+|---|---|---|---|
+|configs_yaml<input type="checkbox" class="rowselector hidden"> | str | 存放参数的yaml文件路径 | ‘./configs/demo.yaml’ |
+
+**yaml文件参数说明：**
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
@@ -92,11 +85,29 @@ python run.py \
 |lr<input type="checkbox" class="rowselector hidden"> | float | 学习率 | 0.1 | 
 |lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
+|use_default_mean_std<input type="checkbox" class="rowselector hidden"> | bool | 是否使用默认的均值和方差 | False | 
+|use_distrot<input type="checkbox" class="rowselector hidden"> | bool | 是否使用数据扰动 | True | 
+|use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | 
+|print_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少个step输出loss、accuracy信息 | 10 | 
+|test_batch_size<input type="checkbox" class="rowselector hidden"> | int | 测试集的批大小 | 8 | 
+|l2_decay<input type="checkbox" class="rowselector hidden"> | float | l2 decay的参数 | 8 | 
+|momentum_rate<input type="checkbox" class="rowselector hidden"> | float | 冲量的比例 | 8 | 
+|lower_ratio<input type="checkbox" class="rowselector hidden"> | float | 最小长宽缩放比 | 0.75 | 
+|upper_ratio<input type="checkbox" class="rowselector hidden"> | float | 最大长宽缩放比 | 1.33 | 
+|lower_scale<input type="checkbox" class="rowselector hidden"> | float | 最小面积缩放比 | 0.08 | 
+|reader_thread<input type="checkbox" class="rowselector hidden"> | int | 读取数据的线程数 | 8 | 
+|reader_buf_size<input type="checkbox" class="rowselector hidden"> | int | 读取数据时缓冲区的大小 | 2048 | 
+|interpolation<input type="checkbox" class="rowselector hidden"> | int | 对图像进行resize的插值方式 | 1 | 
+|use_label_smoothing<input type="checkbox" class="rowselector hidden"> | bool | 是否使用label smooth | False | 
+|label_smoothing_epsilon<input type="checkbox" class="rowselector hidden"> | float | label smooth的比例 | 0.1 | 
+|use_mixup<input type="checkbox" class="rowselector hidden"> | bool | 是否使用mixup | False | 
+|mixup_alpha<input type="checkbox" class="rowselector hidden"> | float | mixuup的比例 | 0.2 |
+|step_epochs<input type="checkbox" class="rowselector hidden"> | str | 那几个epoch进行学习率衰减，用逗号分隔 | 10,20,30,40 | 
 
 **数据读取器说明：** 数据读取器定义在```reader.py```文件中，现在默认基于cv2的数据读取器。当前支持的数据增广方式有：
 
 * 旋转
-* 颜色抖动（暂未实现）
+* 颜色抖动
 * 随机裁剪
 * 中心裁剪
 * 长宽调整
@@ -108,7 +119,7 @@ python run.py \
  2. 部分模型的size是固定的，在选择完模型并确定使用pretrained model后image_h和image_w固定位某个值。（如AlexNet）
 
 
-### Auto FineTune的使用
+### AutoFineTune的使用
 ***安装***：参考[PaddleHub安装教程](https://github.com/PaddlePaddle/PaddleHub/tree/develop)         
 数据准备完毕后，可以通过如下的方式启动训练：
 ```
@@ -120,15 +131,22 @@ hub autofinetune run.py \
        --evaluate_choice=fulltrail \
        --tuning_strategy=HAZero \
        --output_dir=./output \
-       model ResNet50 \
-       data_dir ./data \
-       image_h 224 \
-       image_w 224 \
-       lr_strategy piecewise_decay \
-       use_pretrained True \
-       use_auto_finetune True
+       configs_yaml ./confifgs/demo.yaml 
 ```
 **参数说明：**
+
+|参数名 | 类型 | 含义 | 默认值 | 
+|---|---|---|---|
+|param_file<input type="checkbox" class="rowselector hidden"> | str | yaml文件路径（AutoFineTune参数） | 此为固定值不可替换 | 
+|cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id（AutoFineTune参数） | ['0'] | 
+|popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数（AutoFineTune参数） | 此为固定值不可替换 | 
+|round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数（AutoFineTune参数） | 此为固定值不可替换 | 
+|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 超参优化评价策略（AutoFineTune参数） | 此为固定值不可替换 | 
+|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | 超参优化搜索策略（AutoFineTune参数） | 此为固定值不可替换 | 
+|output_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径（AutoFineTune参数） | ’./output‘ |
+|configs_yaml<input type="checkbox" class="rowselector hidden"> | str | 存放参数的yaml文件路径 | ‘./confifgs/demo.yaml’ |
+
+**yaml文件参数说明：**
 
 |参数名 | 类型 | 含义 | 默认值 | 
 |---|---|---|---|
@@ -142,10 +160,21 @@ hub autofinetune run.py \
 |image_w<input type="checkbox" class="rowselector hidden"> | int | 图像宽度 | 224 | 
 |lr_strategy<input type="checkbox" class="rowselector hidden"> | str | 学习策略 | ’piecewise_decay‘ | 
 |resize_short_size<input type="checkbox" class="rowselector hidden"> | int | 短边resize的长度 | 256 | 
-|param_file<input type="checkbox" class="rowselector hidden"> | str | yaml文件路径（Auto FineTune参数） | 此为固定值不可替换 | 
-|cuda<input type="checkbox" class="rowselector hidden"> | list | 使用的gpu的卡的id（Auto FineTune参数） | ['0'] | 
-|popsize<input type="checkbox" class="rowselector hidden"> | int | 每个round的组合数（Auto FineTune参数） | 此为固定值不可替换 | 
-|round<input type="checkbox" class="rowselector hidden"> | int | auto finetune的轮数（Auto FineTune参数） | 此为固定值不可替换 | 
-|evaluate_choice<input type="checkbox" class="rowselector hidden"> | str | 超参优化评价策略（Auto FineTune参数） | 此为固定值不可替换 | 
-|tuning_strategy<input type="checkbox" class="rowselector hidden"> | str | 超参优化搜索策略（Auto FineTune参数） | 此为固定值不可替换 | 
-|output_dir<input type="checkbox" class="rowselector hidden"> | str | 模型保存路径（Auto FineTune参数） | ’./output‘ |
+|use_default_mean_std<input type="checkbox" class="rowselector hidden"> | bool | 是否使用默认的均值和方差 | False | 
+|use_distrot<input type="checkbox" class="rowselector hidden"> | bool | 是否使用数据扰动 | True | 
+|use_rotate<input type="checkbox" class="rowselector hidden"> | bool | 是否使用图像旋转 | True | |print_step<input type="checkbox" class="rowselector hidden"> | int | 每隔多少个step输出loss、accuracy信息 | 10 | 
+|test_batch_size<input type="checkbox" class="rowselector hidden"> | int | 测试集的批大小 | 8 | 
+|l2_decay<input type="checkbox" class="rowselector hidden"> | float | l2 decay的参数 | 8 | 
+|momentum_rate<input type="checkbox" class="rowselector hidden"> | float | 冲量的比例 | 8 | 
+|lower_ratio<input type="checkbox" class="rowselector hidden"> | float | 最小长宽缩放比 | 0.75 | 
+|upper_ratio<input type="checkbox" class="rowselector hidden"> | float | 最大长宽缩放比 | 1.33 | 
+|lower_scale<input type="checkbox" class="rowselector hidden"> | float | 最小面积缩放比 | 0.08 | 
+|reader_thread<input type="checkbox" class="rowselector hidden"> | int | 读取数据的线程数 | 8 | 
+|reader_buf_size<input type="checkbox" class="rowselector hidden"> | int | 读取数据时缓冲区的大小 | 2048 | 
+|interpolation<input type="checkbox" class="rowselector hidden"> | int | 对图像进行resize的插值方式 | 1 | 
+|use_label_smoothing<input type="checkbox" class="rowselector hidden"> | bool | 是否使用label smooth | False | 
+|label_smoothing_epsilon<input type="checkbox" class="rowselector hidden"> | float | label smooth的比例 | 0.1 | 
+|use_mixup<input type="checkbox" class="rowselector hidden"> | bool | 是否使用mixup | False | 
+|mixup_alpha<input type="checkbox" class="rowselector hidden"> | float | mixuup的比例 | 0.2 |
+|step_epochs<input type="checkbox" class="rowselector hidden"> | str | 那几个epoch进行学习率衰减，用逗号分隔 | 10,20,30,40 | 
+

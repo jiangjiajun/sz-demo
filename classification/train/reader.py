@@ -23,6 +23,7 @@ import signal
 
 import paddle
 import paddle.fluid as fluid
+from PIL import Image, ImageEnhance
 
 random.seed(0)
 np.random.seed(0)
@@ -45,10 +46,14 @@ def rotate_image(img):
     return rotated
 
 
-def random_crop(img, size, settings, scale=None, ratio=None,
+def random_crop(img,
+                size,
+                settings,
+                scale=None,
+                ratio=None,
                 interpolation=None):
     """random crop image
-        
+
     Args:
         img: image data
         size: crop size
@@ -75,8 +80,8 @@ def random_crop(img, size, settings, scale=None, ratio=None,
     scale_max = min(scale[1], bound)
     scale_min = min(scale[0], bound)
 
-    target_area = img.shape[0] * img.shape[1] * np.random.uniform(scale_min,
-                                                                  scale_max)
+    target_area = img.shape[0] * img.shape[1] * np.random.uniform(
+        scale_min, scale_max)
     target_size = math.sqrt(target_area)
     w = int(target_size * w)
     h = int(target_size * h)
@@ -86,7 +91,8 @@ def random_crop(img, size, settings, scale=None, ratio=None,
     img = img[i:i + h, j:j + w, :]
 
     if interpolation:
-        resized = cv2.resize(img, (size[2], size[1]), interpolation=interpolation)
+        resized = cv2.resize(img, (size[2], size[1]),
+                             interpolation=interpolation)
     else:
         resized = cv2.resize(img, (size[2], size[1]))
     return resized
@@ -102,12 +108,50 @@ def distort_color(img):
     Returns:
         distorted color image data
     """
-    return img
+    def random_brightness(img, lower=0.5, upper=1.5):
+        e = np.random.uniform(lower, upper)
+        return ImageEnhance.Brightness(img).enhance(e)
+
+    def random_contrast(img, lower=0.5, upper=1.5):
+        e = np.random.uniform(lower, upper)
+        return ImageEnhance.Contrast(img).enhance(e)
+
+    def random_color(img, lower=0.5, upper=1.5):
+        e = np.random.uniform(lower, upper)
+        return ImageEnhance.Color(img).enhance(e)
+
+    def random_hue(img, lower=-18, upper=18):
+        hue_delta = np.random.uniform(lower, upper)
+        img = np.array(img.convert('HSV'))
+        img[:, :, 0] = img[:, :, 0] + hue_delta
+        img = Image.fromarray(img, mode='HSV').convert('RGB')
+        return img
+
+    if np.random.randint(0, 2) == 1:
+        if np.random.randint(0, 2) == 1:
+            ops = [
+                random_brightness, random_contrast, random_color, random_hue
+            ]
+        else:
+            ops = [
+                random_brightness, random_color, random_hue, random_contrast
+            ]
+        #ops = [random_brightness, random_contrast, random_color]
+        #np.random.shuffle(ops)
+        img = Image.fromarray(img)
+        img = ops[0](img)
+        img = ops[1](img)
+        img = ops[2](img)
+        img = ops[3](img)
+        img = np.asarray(img)
+        return img
+    else:
+        return img
 
 
 def resize_short(img, target_size, interpolation=None):
     """resize image
-    
+
     Args:
         img: image data
         target_size: resize short target size
@@ -120,21 +164,21 @@ def resize_short(img, target_size, interpolation=None):
     resized_width = int(round(img.shape[1] * percent))
     resized_height = int(round(img.shape[0] * percent))
     if interpolation:
-        resized = cv2.resize(
-            img, (resized_width, resized_height), interpolation=interpolation)
+        resized = cv2.resize(img, (resized_width, resized_height),
+                             interpolation=interpolation)
     else:
         resized = cv2.resize(img, (resized_width, resized_height))
     return resized
 
 
 def crop_image(img, target_size, center):
-    """crop image 
-    
+    """crop image
+
     Args:
         img: images data
         target_size: crop target size
         center: crop mode
-    
+
     Returns:
         img: cropped image data
     """
@@ -155,7 +199,6 @@ def crop_image(img, target_size, center):
 def create_mixup_reader(settings, rd):
     """
     """
-
     class context:
         tmp_mix = []
         tmp_l1 = []
@@ -206,7 +249,6 @@ def process_image(sample, settings, mode, color_jitter, rotate):
 
     mean = settings.image_mean
     std = settings.image_std
-#     crop_size = settings.crop_size
     crop_size = (3, settings.image_h, settings.image_w)
     img_path = sample[0]
     img = cv2.imread(img_path)
@@ -214,14 +256,14 @@ def process_image(sample, settings, mode, color_jitter, rotate):
     if mode == 'train':
         if rotate:
             img = rotate_image(img)
-        if crop_size[1] > 0 and  crop_size[2] > 0:
+        if crop_size[1] > 0 and crop_size[2] > 0:
             img = random_crop(img, crop_size, settings)
         if color_jitter:
             img = distort_color(img)
         if np.random.randint(0, 2) == 1:
             img = img[:, ::-1, :]
     else:
-        if crop_size[1] > 0 and  crop_size[2] > 0:
+        if crop_size[1] > 0 and crop_size[2] > 0:
             target_size = settings.resize_short_size
             img = resize_short(img, target_size)
             img = crop_image(img, target_size=crop_size, center=True)
@@ -266,19 +308,17 @@ def _reader_creator(settings,
             elif mode == "test":
                 yield [img_path]
 
-    mapper = functools.partial(
-        process_image,
-        settings=settings,
-        mode=mode,
-        color_jitter=color_jitter,
-        rotate=rotate)
+    mapper = functools.partial(process_image,
+                               settings=settings,
+                               mode=mode,
+                               color_jitter=color_jitter,
+                               rotate=rotate)
 
-    return paddle.reader.xmap_readers(
-        mapper,
-        reader,
-        settings.reader_thread,
-        settings.reader_buf_size,
-        order=False)
+    return paddle.reader.xmap_readers(mapper,
+                                      reader,
+                                      settings.reader_thread,
+                                      settings.reader_buf_size,
+                                      order=False)
 
 
 def train(settings):
@@ -292,16 +332,15 @@ def train(settings):
     """
     file_list = os.path.join(settings.data_dir, 'train_list.txt')
     assert os.path.isfile(
-        file_list), "{} doesn't exist, please check train data list path".format(
-            file_list)
-    reader = _reader_creator(
-        settings,
-        file_list,
-        'train',
-        shuffle=True,
-        color_jitter=False,
-        rotate=False,
-        data_dir=settings.data_dir)
+        file_list
+    ), "{} doesn't exist, please check train data list path".format(file_list)
+    reader = _reader_creator(settings,
+                             file_list,
+                             'train',
+                             shuffle=True,
+                             color_jitter=settings.use_distrot,
+                             rotate=settings.use_rotate,
+                             data_dir=settings.data_dir)
 
     if settings.use_mixup == True:
         reader = create_mixup_reader(settings, reader)
@@ -322,22 +361,28 @@ def val(settings):
         file_list), "{} doesn't exist, please check val data list path".format(
             file_list)
 
-    return _reader_creator(
-        settings, file_list, 'val', shuffle=False, data_dir=settings.data_dir)
+    return _reader_creator(settings,
+                           file_list,
+                           'val',
+                           shuffle=False,
+                           data_dir=settings.data_dir)
 
 
 def test(settings):
-    """Create a reader for testing 
+    """Create a reader for testing
 
     Args:
         settings: arguments
-    
+
     Returns:
         test reader
     """
     file_list = os.path.join(settings.data_dir, 'val_list.txt')
     assert os.path.isfile(
-        file_list), "{} doesn't exist, please check test data list path".format(
-            file_list)
-    return _reader_creator(
-        settings, file_list, 'test', shuffle=False, data_dir=settings.data_dir)
+        file_list
+    ), "{} doesn't exist, please check test data list path".format(file_list)
+    return _reader_creator(settings,
+                           file_list,
+                           'test',
+                           shuffle=False,
+                           data_dir=settings.data_dir)
